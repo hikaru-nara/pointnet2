@@ -12,9 +12,9 @@ sys.path.append(os.path.join(ROOT_DIR, 'utils'))
 sys.path.append(os.path.join(ROOT_DIR, 'tf_ops/sampling'))
 sys.path.append(os.path.join(ROOT_DIR, 'tf_ops/grouping'))
 sys.path.append(os.path.join(ROOT_DIR, 'tf_ops/3d_interpolation'))
-from tf_sampling import farthest_point_sample, gather_point
-from tf_grouping import query_ball_point, group_point, knn_point
-from tf_interpolate import three_nn, three_interpolate
+# from tf_sampling import farthest_point_sample, gather_point
+# from tf_grouping import query_ball_point, group_point, knn_point
+# from tf_interpolate import three_nn, three_interpolate
 import tensorflow as tf
 import numpy as np
 import tf_util
@@ -38,24 +38,24 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
     '''
     if preprocessing:
         raise NotImplementedError
-    else:
-        new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
-        if knn:
-            _,idx = knn_point(nsample, xyz, new_xyz)
-        else:
-            idx, pts_cnt = query_ball_point(radius, nsample, xyz, new_xyz)
-        grouped_xyz = group_point(xyz, idx) # (batch_size, npoint, nsample, 3)
-        grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
-        if points is not None:
-            grouped_points = group_point(points, idx) # (batch_size, npoint, nsample, channel)
-            if use_xyz:
-                new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)
-            else:
-                new_points = grouped_points
-        else:
-            new_points = grouped_xyz
+    # else:
+    #     new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
+    #     if knn:
+    #         _,idx = knn_point(nsample, xyz, new_xyz)
+    #     else:
+    #         idx, pts_cnt = query_ball_point(radius, nsample, xyz, new_xyz)
+    #     grouped_xyz = group_point(xyz, idx) # (batch_size, npoint, nsample, 3)
+    #     grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
+    #     if points is not None:
+    #         grouped_points = group_point(points, idx) # (batch_size, npoint, nsample, channel)
+    #         if use_xyz:
+    #             new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)
+    #         else:
+    #             new_points = grouped_points
+    #     else:
+    #         new_points = grouped_xyz
 
-        return new_xyz, new_points, idx, grouped_xyz
+    #     return new_xyz, new_points, idx, grouped_xyz
 
 
 def sample_and_group_all(xyz, points, use_xyz=True):

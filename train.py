@@ -6,6 +6,7 @@ import argparse
 import math
 from datetime import datetime
 import h5py
+from preprocess import preprocess_grouping_and_sampling
 import numpy as np
 import tensorflow as tf
 import socket
@@ -206,7 +207,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessing=False):
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
         if preprocessing:
-            preprocess(batch_data)
+            preprocess_grouping_and_sampling(batch_data)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
