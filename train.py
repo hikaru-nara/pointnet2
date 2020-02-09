@@ -6,7 +6,7 @@ import argparse
 import math
 from datetime import datetime
 import h5py
-from preprocess import preprocess_grouping_and_sampling
+from util.preprocess import preprocess_grouping_and_sampling
 import numpy as np
 import tensorflow as tf
 import socket
