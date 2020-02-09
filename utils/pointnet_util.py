@@ -19,7 +19,7 @@ import tensorflow as tf
 import numpy as np
 import tf_util
 
-def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=True):
+def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=True, preprocessing=False):
     '''
     Input:
         npoint: int32
@@ -36,24 +36,26 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         grouped_xyz: (batch_size, npoint, nsample, 3) TF tensor, normalized point XYZs
             (subtracted by seed point XYZ) in local regions
     '''
-
-    new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
-    if knn:
-        _,idx = knn_point(nsample, xyz, new_xyz)
+    if preprocessing:
+        raise NotImplementedError
     else:
-        idx, pts_cnt = query_ball_point(radius, nsample, xyz, new_xyz)
-    grouped_xyz = group_point(xyz, idx) # (batch_size, npoint, nsample, 3)
-    grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
-    if points is not None:
-        grouped_points = group_point(points, idx) # (batch_size, npoint, nsample, channel)
-        if use_xyz:
-            new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)
+        new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
+        if knn:
+            _,idx = knn_point(nsample, xyz, new_xyz)
         else:
-            new_points = grouped_points
-    else:
-        new_points = grouped_xyz
+            idx, pts_cnt = query_ball_point(radius, nsample, xyz, new_xyz)
+        grouped_xyz = group_point(xyz, idx) # (batch_size, npoint, nsample, 3)
+        grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
+        if points is not None:
+            grouped_points = group_point(points, idx) # (batch_size, npoint, nsample, channel)
+            if use_xyz:
+                new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)
+            else:
+                new_points = grouped_points
+        else:
+            new_points = grouped_xyz
 
-    return new_xyz, new_points, idx, grouped_xyz
+        return new_xyz, new_points, idx, grouped_xyz
 
 
 def sample_and_group_all(xyz, points, use_xyz=True):
@@ -84,7 +86,8 @@ def sample_and_group_all(xyz, points, use_xyz=True):
     return new_xyz, new_points, idx, grouped_xyz
 
 
-def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_all, is_training, bn_decay, scope, bn=True, pooling='max', knn=False, use_xyz=True, use_nchw=False):
+def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_all, is_training, \
+        bn_decay, scope, bn=True, pooling='max', knn=False, use_xyz=True, use_nchw=False, preprocessing=False):
     ''' PointNet Set Abstraction (SA) Module
         Input:
             xyz: (batch_size, ndataset, 3) TF tensor
@@ -110,7 +113,7 @@ def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_al
             nsample = xyz.get_shape()[1].value
             new_xyz, new_points, idx, grouped_xyz = sample_and_group_all(xyz, points, use_xyz)
         else:
-            new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz)
+            new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz, preprocessing=preprocessing)
 
         # Point Feature Embedding
         if use_nchw: new_points = tf.transpose(new_points, [0,3,1,2])

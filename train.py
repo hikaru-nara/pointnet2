@@ -35,6 +35,7 @@ parser.add_argument('--optimizer', default='adam', help='adam or momentum [defau
 parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]')
 parser.add_argument('--decay_rate', type=float, default=0.7, help='Decay rate for lr decay [default: 0.7]')
 parser.add_argument('--normal', action='store_true', help='Whether to use normal information')
+parser.add_argument('--preprocessing',  action='store_true', help='Whether to use preprocessing to speed up grouping and sampling')
 FLAGS = parser.parse_args()
 
 EPOCH_CNT = 0
@@ -48,6 +49,7 @@ MOMENTUM = FLAGS.momentum
 OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
+preprocessing = FLAGS.preprocessing
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(ROOT_DIR, 'models', FLAGS.model+'.py')
@@ -118,7 +120,7 @@ def train():
             tf.summary.scalar('bn_decay', bn_decay)
 
             # Get model and loss 
-            pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay)
+            pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessing=preprocessing)
             MODEL.get_loss(pred, labels_pl, end_points)
             losses = tf.get_collection('losses')
             total_loss = tf.add_n(losses, name='total_loss')
@@ -183,7 +185,7 @@ def train():
                 log_string("Model saved in file: %s" % save_path)
 
 
-def train_one_epoch(sess, ops, train_writer):
+def train_one_epoch(sess, ops, train_writer, preprocessing=False):
     """ ops: dict mapping from string to tf ops """
     is_training = True
     
@@ -203,7 +205,8 @@ def train_one_epoch(sess, ops, train_writer):
         bsize = batch_data.shape[0]
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
-
+        if preprocessing:
+            preprocess(batch_data)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
