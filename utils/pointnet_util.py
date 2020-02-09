@@ -37,6 +37,10 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
             (subtracted by seed point XYZ) in local regions
     '''
     if preprocessing:
+        print("ERROR: version with preprocessing is under develop")
+        raise NotImplementedError
+    else:
+        print("ERROR: version without preprocessing is not implemented!")
         raise NotImplementedError
     # else:
     #     new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
