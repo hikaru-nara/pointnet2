@@ -6,7 +6,7 @@ import argparse
 import math
 from datetime import datetime
 import h5py
-from utils.preprocess import preprocess_grouping_and_sampling
+
 import numpy as np
 import tensorflow as tf
 import socket
@@ -19,6 +19,7 @@ sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
 sys.path.append(os.path.join(ROOT_DIR, 'utils'))
 import provider
+from preprocess import preprocess_grouping_and_sampling
 import tf_util
 import modelnet_dataset
 import modelnet_h5_dataset
