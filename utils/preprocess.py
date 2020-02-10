@@ -7,7 +7,7 @@ output:
 """
 batch_point_sampling = None
 
-def Preprocessor():
+class Preprocessor():
 	def __init__(self, options=None):
 		self.options = options
 		self.npoints = [512,128]
