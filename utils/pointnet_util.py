@@ -38,11 +38,11 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
             (subtracted by seed point XYZ) in local regions
     '''
     if preprocessor is not None:
-        batch_size = int(xyz.shape[0])
-        print('batch_size',batch_size)
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
         idx = preprocessor.results[str(npoint)]['idx']
+        batch_size = int(xyz.shape[0])
         print('-------------shapes in grouping--------------')
+        print('batch_size',batch_size)
         print('idx.shape', idx.shape, idx.dtype)
         batch_idx = tf.cast(
                         tf.tile(
