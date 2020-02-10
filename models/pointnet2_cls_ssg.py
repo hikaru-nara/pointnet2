@@ -29,7 +29,7 @@ def get_model(point_cloud, is_training, bn_decay=None, preprocessor=None):
     # Set abstraction layers
     # Note: When using NCHW for layer 2, we see increased GPU memory usage (in TF1.4).
     # So we only use NCHW for layer 1 until this issue can be resolved.
-    print("Is the preprocessor None? ", preprocessor is None)
+    print("Is the preprocessor None? 4", preprocessor is None)
     l1_xyz, l1_points, l1_indices = pointnet_sa_module(l0_xyz, l0_points, npoint=512, radius=0.2, nsample=32, mlp=[64,64,128],\
      mlp2=None, group_all=False, is_training=is_training, bn_decay=bn_decay, scope='layer1', use_nchw=True, preprocessor=preprocessor)
     l2_xyz, l2_points, l2_indices = pointnet_sa_module(l1_xyz, l1_points, npoint=128, radius=0.4, nsample=64, mlp=[128,128,256],\
