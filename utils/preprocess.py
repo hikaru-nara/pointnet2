@@ -24,7 +24,7 @@ class Preprocessor():
 		# 'idx': index in the previous layer of point cloud, 
 		# 		each index is a point in group with a sampled point, shape (batch_size, npoint, nsample)
 
-	def batch_preprocess_grouping_and_sampling(batch_point_clouds):
+	def batch_preprocess_grouping_and_sampling(self, batch_point_clouds):
 		print('-------------preprocessing---------------')
 		new_xyz_512 = sampling(batch_point_clouds, self.npoints[0])
 		idx_512 = grouping(batch_point_clouds, new_xyz_512, self.nsamples[0], self.radius[0])
@@ -39,10 +39,10 @@ class Preprocessor():
 
 		return None
 
-	def sampling(xyz, npoint):
+	def sampling(self, xyz, npoint):
 		return xyz[:, :npoint]
 
-	def grouping(xyz, new_xyz, nsample, radius, knn=False):
+	def grouping(self, xyz, new_xyz, nsample, radius, knn=False):
 		npoint = int(new_xyz.shape[1])
 		return tf.cast(
 				tf.tile(
