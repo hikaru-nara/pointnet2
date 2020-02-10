@@ -72,7 +72,7 @@ def evaluate(num_votes):
      
     with tf.device('/gpu:'+str(GPU_INDEX)):
         if preprocessing:
-            preprocessor = Preprocessor()
+            preprocessor = Preprocessor(config=FLAGS)
         else:
             preprocessor = None
         pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
