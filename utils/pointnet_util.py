@@ -52,7 +52,6 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                             ),
                         idx.dtype
                         )
-        tf.reset_default_graph()
         print('batch_idx.shape',batch_idx.shape)
         gathernd_idx = tf.stack([batch_idx,idx],axis=-1)
         print('gathernd_idx.shape',gathernd_idx.shape)
