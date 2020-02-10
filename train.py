@@ -52,10 +52,7 @@ OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
 preprocessing = FLAGS.preprocessing
-if preprocessing:
-    preprocessor = Preprocessor(config=FLAGS)
-else:
-    preprocessor = None
+
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(ROOT_DIR, 'models', FLAGS.model+'.py')
@@ -116,6 +113,10 @@ def get_bn_decay(batch):
 
 def train():
     with tf.Graph().as_default():
+        if preprocessing:
+            preprocessor = Preprocessor(config=FLAGS)
+        else:
+            preprocessor = None
         with tf.device('/gpu:'+str(GPU_INDEX)):
             pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
             is_training_pl = tf.placeholder(tf.bool, shape=())
