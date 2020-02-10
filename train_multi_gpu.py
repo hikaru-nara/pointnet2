@@ -197,7 +197,7 @@ def train():
                             [i*DEVICE_BATCH_SIZE], [DEVICE_BATCH_SIZE])
 
                         pred, end_points = MODEL.get_model(pc_batch,
-                            is_training=is_training_pl, bn_decay=bn_decay)
+                            is_training=is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
 
                         MODEL.get_loss(pred, label_batch, end_points)
                         losses = tf.get_collection('losses', scope)
