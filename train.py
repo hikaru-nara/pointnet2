@@ -199,7 +199,7 @@ def train():
                 log_string('Model saved in file: %s' % save_path)
 
 
-def train_one_epoch(sess, ops, train_writer, preprocessing=None):
+def train_one_epoch(sess, ops, train_writer, preprocessor=None):
     """ ops: dict mapping from string to tf ops """
     is_training = True
     
