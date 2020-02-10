@@ -11,7 +11,9 @@ class Preprocessor(object):
 	def __init__(self, config=None):
 		super(Preprocessor, self).__init__()
 		self.config = config
-		self.batch_size = config.batch_size
+		# self.batch_size = config.batch_size
+		self.num_gpus = config.num_gpus
+		self.batch_size = config.batch_size//self.num_gpus # batch size per gpu
 		self.npoints = [512,128]
 		self.nsamples = [32,64]
 		self.radius = [0.2,0.4]
