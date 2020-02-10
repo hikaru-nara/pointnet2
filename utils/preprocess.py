@@ -8,15 +8,16 @@ output:
 batch_point_sampling = None
 
 class Preprocessor():
-	def __init__(self, options=None):
-		self.options = options
+	def __init__(self, config=None):
+		self.config = config
+		self.batch_size = config.batch_size
 		self.npoints = [512,128]
 		self.nsamples = [32,64]
 		self.radius = [0.2,0.4]
-		self.results = {'512': {'new_xyz': tf.zeros((1, self.npoints[0], 3)),
-								'idx': tf.zeros((1, self.npoints[0], self.nsamples[0]))},
-					 	'128': {'new_xyz': tf.zeros((1, self.npoints[1], 3)),
-					 			'idx': tf.zeros((1, self.npoints[1], self.nsamples[1]))}}
+		self.results = {'512': {'new_xyz': tf.zeros((self.batch_size, self.npoints[0], 3)),
+								'idx': tf.zeros((self.batch_size, self.npoints[0], self.nsamples[0]))},
+					 	'128': {'new_xyz': tf.zeros((self.batch_size, self.npoints[1], 3)),
+					 			'idx': tf.zeros((self.batch_size, self.npoints[1], self.nsamples[1]))}}
 		# 2-step downsampling scale
 		# in each scale the result contain a dict of 'new_xyz' and 'idx'
 		# 'new_xyz': sampled points, TF tensor of shape (batch_size, npoint, 3)
@@ -42,13 +43,12 @@ class Preprocessor():
 		return xyz[:, :npoint]
 
 	def grouping(xyz, new_xyz, nsample, radius, knn=False):
-		batch_size = int(xyz.shape[0])
 		npoint = int(new_xyz.shape[1])
 		return tf.tile(
 					tf.constant(
 						np.arange(nsample).reshape((1,nsample,1))
 						),
-					[batch_size,npoint,1]
+					[self.batch_size,npoint,1]
 					)
 
 

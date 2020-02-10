@@ -53,7 +53,7 @@ DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
 preprocessing = FLAGS.preprocessing
 if preprocessing:
-    preprocessor = Preprocessor()
+    preprocessor = Preprocessor(config=FLAGS)
 else:
     preprocessor = None
 
