@@ -13,7 +13,7 @@ class Preprocessor():
 		self.npoints = [512,128]
 		self.nsamples = [32,64]
 		self.radius = [0.2,0.4]
-		self.results = {'512': dict(), '128': dict()}
+		self.results = {'512': {'new_xyz':None,'idx':None}, '128': {'new_xyz':None,'idx':None}}
 		# 2-step downsampling scale
 		# in each scale the result contain a dict of 'new_xyz' and 'idx'
 		# 'new_xyz': sampled points, TF tensor of shape (batch_size, npoint, 3)
