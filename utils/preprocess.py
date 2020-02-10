@@ -47,13 +47,14 @@ class Preprocessor(object):
 		return xyz[:, :npoint]
 
 	def grouping(self, xyz, new_xyz, nsample, radius, knn=False):
+		batch_size = xyz.shape[0]
 		npoint = int(new_xyz.shape[1])
 		return tf.cast(
 				tf.tile(
 					tf.constant(
 						np.arange(nsample).reshape((1,1,nsample))
 						),
-					[self.batch_size,npoint,1]
+					[batch_size,npoint,1]
 					),
 				tf.int32
 				)

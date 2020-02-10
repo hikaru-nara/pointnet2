@@ -42,7 +42,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         idx = preprocessor.results[str(npoint)]['idx']
         batch_size = int(xyz.shape[0])
         print('-------------shapes in grouping--------------')
-        print('batch_size',batch_size)
+        print('batch_size=xyz.shape[0]',batch_size)
         print('idx.shape', idx.shape, idx.dtype)
         batch_idx = tf.cast(
                         tf.tile(
