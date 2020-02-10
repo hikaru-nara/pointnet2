@@ -39,6 +39,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
     '''
     if preprocessor is not None:
         batch_size = int(xyz.shape[0])
+        print('batch_size',batch_size)
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
         idx = preprocessor.results[str(npoint)]['idx']
         print('-------------shapes in grouping--------------')
