@@ -19,7 +19,8 @@ import tensorflow as tf
 import numpy as np
 import tf_util
 
-def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=True, preprocessing=False):
+
+def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=True, preprocessor=None):
     '''
     Input:
         npoint: int32
@@ -36,9 +37,42 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         grouped_xyz: (batch_size, npoint, nsample, 3) TF tensor, normalized point XYZs
             (subtracted by seed point XYZ) in local regions
     '''
-    if preprocessing:
-        print("ERROR: version with preprocessing is under develop")
-        raise NotImplementedError   
+    if preprocessor is not None:
+        batch_size = int(npoint.shape[0])
+        new_xyz = preprocessor.results[str(npoint)]['new_xyz']
+        # new_points = preprocessor.results[str(npoint)]['new_points']
+        # new_points = points[idx]
+        idx = preprocessor.results[str(npoint)]['idx']
+        print('-------------shapes in grouping--------------')
+        print('idx.shape', idx.shape)
+        batch_idx = tf.cast(
+                        tf.tile(
+                            tf.constant(
+                                np.arange(batch_size).reshape(batch_size,1,1)
+                                ),
+                            [1,npoint,nsample]
+                            ),
+                        idx.dtype
+                        )
+        print('batch_idx.shape',batch_idx.shape)
+        gathernd_idx = tf.stack([batch_idx,idx],axis=-1)
+        print('gathernd_idx.shape',gathernd_idx.shape)
+        grouped_xyz = tf.gather_nd(xyz, gathernd_idx)
+        if points is not None:
+            grouped_points = tf.gather_nd(points, gathernd_idx)
+            if use_xyz:
+                new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)d
+            else:
+                new_points = grouped_points
+        else:
+            new_points = grouped_xyz
+        # if points is not None:
+        #     xyz_points = np.concatenate([xyz,points],axis=-1)
+        # multidim_index = 
+        # grouped_xyz = preprocessor.results[str(npoint)]['grouped_xyz']
+        return new_xyz, new_points, idx, grouped_xyz
+        # print("ERROR: version with preprocessing is under development")
+        # raise NotImplementedError   
     # else:
     #     new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
     #     if knn:
@@ -59,7 +93,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
     #     return new_xyz, new_points, idx, grouped_xyz
 
     print("ERROR: version without preprocessing is not implemented!")
-    #     raise NotImplementedError
+    raise NotImplementedError
 
 
 def sample_and_group_all(xyz, points, use_xyz=True):

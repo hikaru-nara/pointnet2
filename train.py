@@ -19,7 +19,7 @@ sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
 sys.path.append(os.path.join(ROOT_DIR, 'utils'))
 import provider
-from preprocess import preprocess_grouping_and_sampling
+from preprocess import Preprocessor
 import tf_util
 import modelnet_dataset
 import modelnet_h5_dataset
@@ -52,6 +52,10 @@ OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
 preprocessing = FLAGS.preprocessing
+if preprocessing:
+    preprocessor = Preprocessor()
+else:
+    preprocessor = None
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(ROOT_DIR, 'models', FLAGS.model+'.py')
@@ -122,7 +126,7 @@ def train():
             tf.summary.scalar('bn_decay', bn_decay)
 
             # Get model and loss 
-            pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessing=preprocessing)
+            pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
             MODEL.get_loss(pred, labels_pl, end_points)
             losses = tf.get_collection('losses')
             total_loss = tf.add_n(losses, name='total_loss')
@@ -178,8 +182,8 @@ def train():
             log_string('**** EPOCH %03d ****' % (epoch))
             sys.stdout.flush()
              
-            train_one_epoch(sess, ops, train_writer)
-            eval_one_epoch(sess, ops, test_writer)
+            train_one_epoch(sess, ops, train_writer, preprocessor=preprocessor)
+            eval_one_epoch(sess, ops, test_writer, preprocessor=preprocessor)
 
             # Save the variables to disk.
             if epoch % 10 == 0:
@@ -187,7 +191,7 @@ def train():
                 log_string("Model saved in file: %s" % save_path)
 
 
-def train_one_epoch(sess, ops, train_writer, preprocessing=False):
+def train_one_epoch(sess, ops, train_writer, preprocessing=None):
     """ ops: dict mapping from string to tf ops """
     is_training = True
     
@@ -207,8 +211,8 @@ def train_one_epoch(sess, ops, train_writer, preprocessing=False):
         bsize = batch_data.shape[0]
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
-        if preprocessing:
-            preprocess_grouping_and_sampling(batch_data)
+        if preprocessor is not None:
+            preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
@@ -231,7 +235,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessing=False):
 
     TRAIN_DATASET.reset()
         
-def eval_one_epoch(sess, ops, test_writer):
+def eval_one_epoch(sess, ops, test_writer, preprocessor=None):
     """ ops: dict mapping from string to tf ops """
     global EPOCH_CNT
     is_training = False
@@ -257,7 +261,8 @@ def eval_one_epoch(sess, ops, test_writer):
         # for the last batch in the epoch, the bsize:end are from last batch
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
-
+        if preprocessor is not None:
+            preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training}
