@@ -13,6 +13,7 @@ import socket
 import importlib
 import os
 import sys
+import time
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(BASE_DIR)
@@ -85,10 +86,10 @@ else:
 
 def log_string(out_str):
     LOG_FOUT.write(out_str+'\n')
-    print('log_string')
+    # print('log_string')
     LOG_FOUT.flush()
     # print('reach here 2')
-    print('here is the out_str:', out_str)
+    print(out_str)
     # print(out_str)
 
 def get_learning_rate(batch):
@@ -204,6 +205,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
     is_training = True
     
     log_string(str(datetime.now()))
+    runtime = AverageMeter()
 
     # Make sure batch data is of same size
     cur_batch_data = np.zeros((BATCH_SIZE,NUM_POINT,TRAIN_DATASET.num_channel()))
@@ -225,6 +227,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
+        iteration_start = time.time()
         summary, step, _, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
             ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
         train_writer.add_summary(summary, step)
@@ -233,10 +236,14 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
         total_correct += correct
         total_seen += bsize
         loss_sum += loss_val
-        if (batch_idx+1)%50 == 0:
+        iteration_finish = time.time()
+        runtime.add(iteration_finish - iteration_start)
+
+        if (batch_idx+1)%1 == 0:
             log_string(' ---- batch: %03d ----' % (batch_idx+1))
             log_string('mean loss: %f' % (loss_sum / 50))
             log_string('accuracy: %f' % (total_correct / float(total_seen)))
+            log_string('Runtime: %f' % runtime.mean)
             total_correct = 0
             total_seen = 0
             loss_sum = 0
@@ -296,6 +303,22 @@ def eval_one_epoch(sess, ops, test_writer, preprocessor=None):
 
     TEST_DATASET.reset()
     return total_correct/float(total_seen)
+
+class AverageMeter(object):
+    """docstring for AverageMeter"""
+    def __init__(self):
+        super(AverageMeter, self).__init__()
+        self.value = 0
+        self.number = 0
+        self.sum = 0
+        self.mean = 0
+
+    def add_observation(self, value):
+        self.value=value
+        self.number+=1
+        self.sum+=value
+        self.mean=self.sum/self.number
+
 
 
 if __name__ == "__main__":

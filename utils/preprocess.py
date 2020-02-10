@@ -7,8 +7,9 @@ output:
 """
 batch_point_sampling = None
 
-class Preprocessor():
+class Preprocessor(object):
 	def __init__(self, config=None):
+		super(Preprocessor, self).__init__()
 		self.config = config
 		self.batch_size = config.batch_size
 		self.npoints = [512,128]
@@ -47,7 +48,7 @@ class Preprocessor():
 		return tf.cast(
 				tf.tile(
 					tf.constant(
-						np.arange(nsample).reshape((1,nsample,1))
+						np.arange(nsample).reshape((1,1,nsample))
 						),
 					[self.batch_size,npoint,1]
 					),
