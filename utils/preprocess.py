@@ -13,7 +13,10 @@ class Preprocessor():
 		self.npoints = [512,128]
 		self.nsamples = [32,64]
 		self.radius = [0.2,0.4]
-		self.results = {'512': {'new_xyz':None,'idx':None}, '128': {'new_xyz':None,'idx':None}}
+		self.results = {'512': {'new_xyz': tf.zeros((1, self.npoints[0], 3)),
+								'idx': tf.zeros((1, self.npoints[0], self.nsamples[0]))},
+					 	'128': {'new_xyz': tf.zeros((1, self.npoints[1], 3)),
+					 			'idx': tf.zeros((1, self.npoints[1], self.nsamples[1]))}}
 		# 2-step downsampling scale
 		# in each scale the result contain a dict of 'new_xyz' and 'idx'
 		# 'new_xyz': sampled points, TF tensor of shape (batch_size, npoint, 3)
