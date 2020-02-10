@@ -308,7 +308,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
 
     TRAIN_DATASET.reset()
         
-def eval_one_epoch(sess, ops, test_writer, preprocessor=preprocessor):
+def eval_one_epoch(sess, ops, test_writer, preprocessor=None):
     """ ops: dict mapping from string to tf ops """
     global EPOCH_CNT
     is_training = False
