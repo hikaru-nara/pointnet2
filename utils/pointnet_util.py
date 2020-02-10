@@ -40,8 +40,6 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
     if preprocessor is not None:
         batch_size = int(xyz.shape[0])
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
-        # new_points = preprocessor.results[str(npoint)]['new_points']
-        # new_points = points[idx]
         idx = preprocessor.results[str(npoint)]['idx']
         print('-------------shapes in grouping--------------')
         print('idx.shape', idx.shape)
@@ -54,6 +52,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                             ),
                         idx.dtype
                         )
+        tf.reset_default_graph()
         print('batch_idx.shape',batch_idx.shape)
         gathernd_idx = tf.stack([batch_idx,idx],axis=-1)
         print('gathernd_idx.shape',gathernd_idx.shape)
@@ -66,10 +65,6 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                 new_points = grouped_points
         else:
             new_points = grouped_xyz
-        # if points is not None:
-        #     xyz_points = np.concatenate([xyz,points],axis=-1)
-        # multidim_index = 
-        # grouped_xyz = preprocessor.results[str(npoint)]['grouped_xyz']
         return new_xyz, new_points, idx, grouped_xyz
         # print("ERROR: version with preprocessing is under development")
         # raise NotImplementedError   
