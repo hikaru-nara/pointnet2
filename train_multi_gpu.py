@@ -256,7 +256,7 @@ def train():
         for epoch in range(MAX_EPOCH):
             log_string('**** EPOCH %03d ****' % (epoch))
             sys.stdout.flush()
-             
+            print('What is the preprocessor?', preprocessor)'
             train_one_epoch(sess, ops, train_writer, preprocessor=preprocessor)
             eval_one_epoch(sess, ops, test_writer, preprocessor=preprocessor)
 
