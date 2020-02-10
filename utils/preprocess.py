@@ -28,6 +28,13 @@ class Preprocessor(object):
 		# 'idx': index in the previous layer of point cloud, 
 		# 		each index is a point in group with a sampled point, shape (batch_size, npoint, nsample)
 
+	def multi_gpu_init():
+		self.batch_size = self.batch_size//self.num_gpus
+		self.results = {'512': {'new_xyz': tf.zeros((self.batch_size, self.npoints[0], 3)),
+								'idx': tf.zeros((self.batch_size, self.npoints[0], self.nsamples[0]))},
+					 	'128': {'new_xyz': tf.zeros((self.batch_size, self.npoints[1], 3)),
+					 			'idx': tf.zeros((self.batch_size, self.npoints[1], self.nsamples[1]))}}
+
 	def batch_preprocess_grouping_and_sampling(self, batch_point_clouds):
 		print('-------------preprocessing---------------')
 		new_xyz_512 = self.sampling(batch_point_clouds, self.npoints[0])

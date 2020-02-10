@@ -195,7 +195,8 @@ def train():
                             [i*DEVICE_BATCH_SIZE,0,0], [DEVICE_BATCH_SIZE,-1,-1])
                         label_batch = tf.slice(labels_pl,
                             [i*DEVICE_BATCH_SIZE], [DEVICE_BATCH_SIZE])
-
+                        if preprocessor is not None:
+                            preprocessor.multi_gpu_init()
                         pred, end_points = MODEL.get_model(pc_batch,
                             is_training=is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
 
