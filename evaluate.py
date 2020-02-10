@@ -17,6 +17,7 @@ sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(ROOT_DIR, 'models'))
 sys.path.append(os.path.join(ROOT_DIR, 'utils'))
 import provider
+from preprocess import Preprocessor
 import modelnet_dataset
 import modelnet_h5_dataset
 
@@ -29,9 +30,11 @@ parser.add_argument('--model_path', default='log/model.ckpt', help='model checkp
 parser.add_argument('--dump_dir', default='dump', help='dump folder path [dump]')
 parser.add_argument('--normal', action='store_true', help='Whether to use normal information')
 parser.add_argument('--num_votes', type=int, default=1, help='Aggregate classification scores from multiple rotations [default: 1]')
+parser.add_argument('--preprocessing',  action='store_true', help='Whether to use preprocessing to speed up grouping and sampling')
+
 FLAGS = parser.parse_args()
 
-
+preprocessing = FLAGS.preprocessing
 BATCH_SIZE = FLAGS.batch_size
 NUM_POINT = FLAGS.num_point
 MODEL_PATH = FLAGS.model_path
@@ -68,11 +71,15 @@ def evaluate(num_votes):
     is_training = False
      
     with tf.device('/gpu:'+str(GPU_INDEX)):
+        if preprocessing:
+            preprocessor = Preprocessor()
+        else:
+            preprocessor = None
         pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
         is_training_pl = tf.placeholder(tf.bool, shape=())
 
         # simple model
-        pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl)
+        pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, preprocessor=preprocessor)
         MODEL.get_loss(pred, labels_pl, end_points)
         losses = tf.get_collection('losses')
         total_loss = tf.add_n(losses, name='total_loss')
@@ -97,9 +104,9 @@ def evaluate(num_votes):
            'pred': pred,
            'loss': total_loss}
 
-    eval_one_epoch(sess, ops, num_votes)
+    eval_one_epoch(sess, ops, num_votes, preprocessor=preprocessor)
 
-def eval_one_epoch(sess, ops, num_votes=1, topk=1):
+def eval_one_epoch(sess, ops, num_votes=1, topk=1, preprocessor=None):
     is_training = False
 
     # Make sure batch data is of same size
@@ -133,6 +140,8 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
             else:
                 rotated_data = provider.rotate_point_cloud_by_angle(cur_batch_data[:, shuffled_indices, :],
                     vote_idx/float(num_votes) * np.pi * 2)
+            if preprocessor is not None:
+                preprocessor.batch_preprocess_grouping_and_sampling(rotated_batch_data)
             feed_dict = {ops['pointclouds_pl']: rotated_data,
                          ops['labels_pl']: cur_batch_label,
                          ops['is_training_pl']: is_training}
