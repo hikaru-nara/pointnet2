@@ -126,6 +126,8 @@ def train():
             tf.summary.scalar('bn_decay', bn_decay)
 
             # Get model and loss 
+            print("Are we going to preprocess? ", preprocessing)
+            print("Is the preprocessor None? ", preprocessor is None)
             pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
             MODEL.get_loss(pred, labels_pl, end_points)
             losses = tf.get_collection('losses')
@@ -211,8 +213,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessing=None):
         bsize = batch_data.shape[0]
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
-        print("Are we going to preprocess? ", preprocessing)
-        print("What's the preprocessor? ", preprocessor)
+        
         if preprocessor is not None:
             preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
