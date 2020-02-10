@@ -211,6 +211,8 @@ def train_one_epoch(sess, ops, train_writer, preprocessing=None):
         bsize = batch_data.shape[0]
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
+        print("Are we going to preprocess? ", preprocessing)
+        print("What's the preprocessor? ", preprocessor)
         if preprocessor is not None:
             preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,

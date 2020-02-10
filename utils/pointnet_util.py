@@ -37,6 +37,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         grouped_xyz: (batch_size, npoint, nsample, 3) TF tensor, normalized point XYZs
             (subtracted by seed point XYZ) in local regions
     '''
+    print("Is the preprocessor None? ", preprocessor is None)
     if preprocessor is not None:
         batch_size = int(npoint.shape[0])
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
@@ -145,12 +146,14 @@ def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_al
             idx: (batch_size, npoint, nsample) int32 -- indices for local regions
     '''
     data_format = 'NCHW' if use_nchw else 'NHWC'
+
     with tf.variable_scope(scope) as sc:
         # Sample and Grouping
         if group_all:
             nsample = xyz.get_shape()[1].value
             new_xyz, new_points, idx, grouped_xyz = sample_and_group_all(xyz, points, use_xyz)
         else:
+            print("Is the preprocessor None? ", preprocessor is None)
             new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz, preprocessor=preprocessor)
 
         # Point Feature Embedding
