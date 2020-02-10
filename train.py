@@ -313,7 +313,7 @@ class AverageMeter(object):
         self.sum = 0
         self.mean = 0
 
-    def add_observation(self, value):
+    def add(self, value):
         self.value=value
         self.number+=1
         self.sum+=value
