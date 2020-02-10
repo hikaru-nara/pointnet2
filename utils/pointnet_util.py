@@ -42,7 +42,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
         idx = preprocessor.results[str(npoint)]['idx']
         print('-------------shapes in grouping--------------')
-        print('idx.shape', idx.shape)
+        print('idx.shape', idx.shape, idx.dtype)
         batch_idx = tf.cast(
                         tf.tile(
                             tf.constant(
@@ -53,8 +53,9 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                         idx.dtype
                         )
         print('batch_idx.shape',batch_idx.shape)
-        gathernd_idx = tf.stack([batch_idx,idx],axis=-1)
-        print('gathernd_idx.shape',gathernd_idx.shape)
+        gathernd_idx = tf.cast(tf.stack([batch_idx,idx],axis=-1),tf.int32)
+        print('gathernd_idx.shape',gathernd_idx.shape,gathernd_idx.dtype,tf.stack([batch_idx,idx],axis=-1))
+
         grouped_xyz = tf.gather_nd(xyz, gathernd_idx)
         if points is not None:
             grouped_points = tf.gather_nd(points, gathernd_idx)
