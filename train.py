@@ -52,12 +52,10 @@ OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
 preprocessing = FLAGS.preprocessing
-print("Are we going to preprocess? 0", preprocessing)
 if preprocessing:
     preprocessor = Preprocessor()
 else:
     preprocessor = None
-print("Is the preprocessor None? 0", preprocessor is None)
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(ROOT_DIR, 'models', FLAGS.model+'.py')
@@ -128,8 +126,6 @@ def train():
             tf.summary.scalar('bn_decay', bn_decay)
 
             # Get model and loss 
-            print("Are we going to preprocess? ", preprocessing)
-            print("Is the preprocessor None? 1", preprocessor is None)
             pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
             MODEL.get_loss(pred, labels_pl, end_points)
             losses = tf.get_collection('losses')
