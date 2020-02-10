@@ -21,6 +21,7 @@ sys.path.append(os.path.join(ROOT_DIR, 'models'))
 sys.path.append(os.path.join(ROOT_DIR, 'utils'))
 import provider
 import tf_util
+from preprocess import Preprocessor
 import modelnet_dataset
 import modelnet_h5_dataset
 
@@ -37,10 +38,12 @@ parser.add_argument('--optimizer', default='adam', help='adam or momentum [defau
 parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]')
 parser.add_argument('--decay_rate', type=float, default=0.7, help='Decay rate for lr decay [default: 0.7]')
 parser.add_argument('--normal', action='store_true', help='Whether to use normal information')
+parser.add_argument('--preprocessing',  action='store_true', help='Whether to use preprocessing to speed up grouping and sampling')
 FLAGS = parser.parse_args()
 
 EPOCH_CNT = 0
 
+preprocessing = FLAGS.preprocessing
 NUM_GPUS = FLAGS.num_gpus
 BATCH_SIZE = FLAGS.batch_size
 assert(BATCH_SIZE % NUM_GPUS == 0)
@@ -148,6 +151,10 @@ def get_bn_decay(batch):
 
 def train():
     with tf.Graph().as_default():
+        if preprocessing:
+            preprocessor = Preprocessor(config=FLAGS)
+        else:
+            preprocessor = None
         with tf.device('/cpu:0'):
             pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
             is_training_pl = tf.placeholder(tf.bool, shape=())
@@ -173,7 +180,7 @@ def train():
             # -------------------------------------------
             # Allocating variables on CPU first will greatly accelerate multi-gpu training.
             # Ref: https://github.com/kuza55/keras-extras/issues/21
-            MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay)
+            MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
             
             tower_grads = []
             pred_gpu = []
@@ -248,8 +255,8 @@ def train():
             log_string('**** EPOCH %03d ****' % (epoch))
             sys.stdout.flush()
              
-            train_one_epoch(sess, ops, train_writer)
-            eval_one_epoch(sess, ops, test_writer)
+            train_one_epoch(sess, ops, train_writer, preprocessor=preprocessor)
+            eval_one_epoch(sess, ops, test_writer, preprocessor=preprocessor)
 
             # Save the variables to disk.
             if epoch % 10 == 0:
@@ -257,7 +264,7 @@ def train():
                 log_string("Model saved in file: %s" % save_path)
 
 
-def train_one_epoch(sess, ops, train_writer):
+def train_one_epoch(sess, ops, train_writer, preprocessor=None):
     """ ops: dict mapping from string to tf ops """
     is_training = True
     
@@ -277,7 +284,8 @@ def train_one_epoch(sess, ops, train_writer):
         bsize = batch_data.shape[0]
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
-
+        if preprocessor is not None:
+            preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
@@ -300,7 +308,7 @@ def train_one_epoch(sess, ops, train_writer):
 
     TRAIN_DATASET.reset()
         
-def eval_one_epoch(sess, ops, test_writer):
+def eval_one_epoch(sess, ops, test_writer, preprocessor=preprocessor):
     """ ops: dict mapping from string to tf ops """
     global EPOCH_CNT
     is_training = False
@@ -326,7 +334,8 @@ def eval_one_epoch(sess, ops, test_writer):
         # for the last batch in the epoch, the bsize:end are from last batch
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
-
+        if preprocessor is not None:
+                preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training}
