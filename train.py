@@ -188,6 +188,7 @@ def train():
             # Save the variables to disk.
             if epoch % 10 == 0:
                 save_path = saver.save(sess, os.path.join(LOG_DIR, "model.ckpt"))
+                print(save_path)
                 log_string('Model saved in file: %s' % save_path)
 
 
