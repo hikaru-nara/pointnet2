@@ -156,7 +156,7 @@ def train():
         else:
             preprocessor = None
         print('Are we going to preprocess?', preprocessing)
-        print('What is the preprocessor?', preprocessor)
+        print('What is the preprocessor? 1', preprocessor)
         with tf.device('/cpu:0'):
             pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
             is_training_pl = tf.placeholder(tf.bool, shape=())
@@ -183,7 +183,7 @@ def train():
             # Allocating variables on CPU first will greatly accelerate multi-gpu training.
             # Ref: https://github.com/kuza55/keras-extras/issues/21
             MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
-            
+            print('get model finished')
             tower_grads = []
             pred_gpu = []
             total_loss_gpu = []

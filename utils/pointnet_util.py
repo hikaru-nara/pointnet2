@@ -120,7 +120,7 @@ def sample_and_group_all(xyz, points, use_xyz=True):
 
 
 def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_all, is_training, \
-        bn_decay, scope, bn=True, pooling='max', knn=False, use_xyz=True, use_nchw=False, preprocessor=False):
+        bn_decay, scope, bn=True, pooling='max', knn=False, use_xyz=True, use_nchw=False, preprocessor=None):
     ''' PointNet Set Abstraction (SA) Module
         Input:
             xyz: (batch_size, ndataset, 3) TF tensor
@@ -147,6 +147,7 @@ def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_al
             nsample = xyz.get_shape()[1].value
             new_xyz, new_points, idx, grouped_xyz = sample_and_group_all(xyz, points, use_xyz)
         else:
+            print('What is the preprocessor? 2', preprocessor)
             new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz, preprocessor=preprocessor)
 
         # Point Feature Embedding
