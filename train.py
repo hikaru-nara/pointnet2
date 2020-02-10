@@ -88,9 +88,9 @@ else:
 
 def log_string(out_str):
     LOG_FOUT.write(out_str+'\n')
-    print('reach here')
+    print('log_string')
     LOG_FOUT.flush()
-    print('reach here 2')
+    # print('reach here 2')
     print('here is the out_str:', out_str)
     # print(out_str)
 
@@ -130,6 +130,7 @@ def train():
 
             # Get model and loss 
             pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
+            print('get model finish')
             MODEL.get_loss(pred, labels_pl, end_points)
             losses = tf.get_collection('losses')
             total_loss = tf.add_n(losses, name='total_loss')
@@ -184,8 +185,9 @@ def train():
         for epoch in range(MAX_EPOCH):
             log_string('**** EPOCH %03d ****' % (epoch))
             sys.stdout.flush()
-             
+            print('train one epoch begins')
             train_one_epoch(sess, ops, train_writer, preprocessor=preprocessor)
+            print('train one epoch ends')
             eval_one_epoch(sess, ops, test_writer, preprocessor=preprocessor)
 
             # Save the variables to disk.
