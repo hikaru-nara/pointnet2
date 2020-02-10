@@ -88,8 +88,11 @@ else:
 
 def log_string(out_str):
     LOG_FOUT.write(out_str+'\n')
+    print('reach here')
     LOG_FOUT.flush()
-    print(out_str)
+    print('reach here 2')
+    print('here is the out_str:', out_str)
+    # print(out_str)
 
 def get_learning_rate(batch):
     learning_rate = tf.train.exponential_decay(
@@ -189,6 +192,7 @@ def train():
             if epoch % 10 == 0:
                 save_path = saver.save(sess, os.path.join(LOG_DIR, "model.ckpt"))
                 print(save_path)
+                print('Model saved in file: %s' % save_path)
                 log_string('Model saved in file: %s' % save_path)
 
 
