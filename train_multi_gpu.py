@@ -155,6 +155,8 @@ def train():
             preprocessor = Preprocessor(config=FLAGS)
         else:
             preprocessor = None
+        print('Are we going to preprocess?', preprocessing)
+        print('What is the preprocessor?', preprocessor)
         with tf.device('/cpu:0'):
             pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
             is_training_pl = tf.placeholder(tf.bool, shape=())
