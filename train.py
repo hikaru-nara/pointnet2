@@ -52,11 +52,12 @@ OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
 preprocessing = FLAGS.preprocessing
+print("Are we going to preprocess? 0", preprocessing)
 if preprocessing:
     preprocessor = Preprocessor()
 else:
     preprocessor = None
-print("Is the preprocessor None? ", preprocessor is None)
+print("Is the preprocessor None? 0", preprocessor is None)
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(ROOT_DIR, 'models', FLAGS.model+'.py')
