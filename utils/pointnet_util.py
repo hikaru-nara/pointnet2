@@ -68,7 +68,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                 new_points = grouped_points
         else:
             new_points = grouped_xyz
-        print("index time: %f"% time.time()-index_time)
+        print("index time: %f" % (time.time()-index_time))
         return new_xyz, new_points, idx, grouped_xyz
     else:
         new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
