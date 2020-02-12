@@ -261,7 +261,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
             if preprocessing:
                 log_string('Preprocess time: %f' % preprocesstime.mean) 
             log_string('Runtime: %f' % runtime.mean)
-            log_string('Sample and grouping time: %f' sg_time.mean)
+            log_string('Sample and grouping time: %f' % sg_time.mean)
 
             total_correct = 0
             total_seen = 0
