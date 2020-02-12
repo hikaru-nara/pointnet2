@@ -214,6 +214,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
     log_string(str(datetime.now()))
     runtime = AverageMeter()
     preprocesstime = AverageMeter()
+    sg_time = AverageMeter()
     # Make sure batch data is of same size
     cur_batch_data = np.zeros((BATCH_SIZE,NUM_POINT,TRAIN_DATASET.num_channel()))
     cur_batch_label = np.zeros((BATCH_SIZE), dtype=np.int32)
@@ -242,6 +243,8 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
             ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
         iteration_finish = time.time()
         runtime.add(iteration_finish - iteration_start)
+        sample_and_group_time = tf.get_collection('sg_time')
+        sg_time.add(sum(list(sample_and_group_time)))
         train_writer.add_summary(summary, step)
         # train_writer.add_summary(group_time_summary, step)
         pred_val = np.argmax(pred_val, 1)
@@ -258,6 +261,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
             if preprocessing:
                 log_string('Preprocess time: %f' % preprocesstime.mean) 
             log_string('Runtime: %f' % runtime.mean)
+            log_string('Sample and grouping time: %f' sg_time.mean)
 
             total_correct = 0
             total_seen = 0
