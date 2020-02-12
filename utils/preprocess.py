@@ -12,7 +12,7 @@ class Preprocessor(object):
 		super(Preprocessor, self).__init__()
 		self.config = config
 		self.batch_size = config.batch_size
-		self.num_gpus = config.num_gpus
+		# self.num_gpus = config.num_gpus
 		print('batch_size',self.batch_size)
 		# self.batch_size = config.batch_size//self.num_gpus # batch size per gpu
 		self.npoints = [512,128]
@@ -29,7 +29,7 @@ class Preprocessor(object):
 		# 		each index is a point in group with a sampled point, shape (batch_size, npoint, nsample)
 
 	def multi_gpu_init(self):
-		self.batch_size = self.batch_size//self.num_gpus
+		self.batch_size = self.batch_size//self.config.num_gpus
 		self.results = {'512': {'new_xyz': tf.zeros((self.batch_size, self.npoints[0], 3)),
 								'idx': tf.zeros((self.batch_size, self.npoints[0], self.nsamples[0]))},
 					 	'128': {'new_xyz': tf.zeros((self.batch_size, self.npoints[1], 3)),
