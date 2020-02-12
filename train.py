@@ -133,6 +133,8 @@ def train():
 
             # Get model and loss 
             pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
+            sam_grp_time = tf.get_collection('sg_time')
+            tf.summary.scalar('sample and group time', sam_grp_time)
             # print('get model finish')
             MODEL.get_loss(pred, labels_pl, end_points)
             losses = tf.get_collection('losses')

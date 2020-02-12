@@ -19,7 +19,7 @@ from tf_interpolate import three_nn, three_interpolate
 import tensorflow as tf
 import numpy as np
 import tf_util
-from train import group_time
+# from train import group_time
 # group_time=tf.summary.scalar('some scalar', 100.0)
 
 def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=True, preprocessor=None):
@@ -151,8 +151,9 @@ def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_al
         else:
             # print('What is the preprocessor? 2', preprocessor)
             new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz, preprocessor=preprocessor) 
-        print("I'm logging time")
-        group_time=tf.summary.scalar('sampling and grouping time', (time.time()-index_time))
+        tf.add_collection('sg_time',time.time()-index_time)
+        # print("I'm logging time")
+        # group_time=tf.summary.scalar('sampling and grouping time', (time.time()-index_time))
         # Point Feature Embedding
         if use_nchw: new_points = tf.transpose(new_points, [0,3,1,2])
         for i, num_out_channel in enumerate(mlp):
