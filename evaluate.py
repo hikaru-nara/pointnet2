@@ -144,7 +144,7 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1, preprocessor=None):
                     vote_idx/float(num_votes) * np.pi * 2)
             if preprocessor is not None:
                 preprocess_start = time.time()
-                preprocessor.batch_preprocess_grouping_and_sampling(rotated_batch_data)
+                preprocessor.batch_preprocess_grouping_and_sampling(rotated_data)
                 preprocesstime.add(time.time()-preprocess_start)
             feed_dict = {ops['pointclouds_pl']: rotated_data,
                          ops['labels_pl']: cur_batch_label,
