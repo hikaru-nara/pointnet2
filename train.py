@@ -152,12 +152,12 @@ def train():
                 optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=MOMENTUM)
             elif OPTIMIZER == 'adam':
                 optimizer = tf.train.AdamOptimizer(learning_rate)
-            print("155")
+            # print("155")
             train_op = optimizer.minimize(total_loss, global_step=batch)
             
             # Add ops to save and restore all the variables.
             saver = tf.train.Saver()
-        print("159")
+        # print("159")
         # Create a session
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
@@ -172,7 +172,7 @@ def train():
 
         # Init variables
         init = tf.global_variables_initializer()
-        print("175")
+        # print("175")
         sess.run(init)
 
         ops = {'pointclouds_pl': pointclouds_pl,
