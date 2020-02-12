@@ -22,6 +22,7 @@ sys.path.append(os.path.join(ROOT_DIR, 'utils'))
 import provider
 from preprocess import Preprocessor
 import tf_util
+import pointnet_util
 import modelnet_dataset
 import modelnet_h5_dataset
 
@@ -232,11 +233,12 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
         iteration_start = time.time()
-        summary, step, _, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
-            ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
+        summary, step, _, loss_val, pred_val, group_time = sess.run([ops['merged'], ops['step'],
+            ops['train_op'], ops['loss'], ops['pred'], pointnet_util.group_time], feed_dict=feed_dict)
         iteration_finish = time.time()
         runtime.add(iteration_finish - iteration_start)
         train_writer.add_summary(summary, step)
+        train_writer.add_summary(group_time, step)
         pred_val = np.argmax(pred_val, 1)
         correct = np.sum(pred_val[0:bsize] == batch_label[0:bsize])
         total_correct += correct
