@@ -54,7 +54,7 @@ OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
 preprocessing = FLAGS.preprocessing
-
+group_time = None
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(ROOT_DIR, 'models', FLAGS.model+'.py')
@@ -233,12 +233,13 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
         iteration_start = time.time()
-        summary, step, _, loss_val, pred_val, group_time = sess.run([ops['merged'], ops['step'],
-            ops['train_op'], ops['loss'], ops['pred'], pointnet_util.group_time], feed_dict=feed_dict)
+        print('group_time is ',group_time)
+        summary, step, _, loss_val, pred_val, group_time_summary = sess.run([ops['merged'], ops['step'],
+            ops['train_op'], ops['loss'], ops['pred'], group_time], feed_dict=feed_dict)
         iteration_finish = time.time()
         runtime.add(iteration_finish - iteration_start)
         train_writer.add_summary(summary, step)
-        train_writer.add_summary(group_time, step)
+        train_writer.add_summary(group_time_summary, step)
         pred_val = np.argmax(pred_val, 1)
         correct = np.sum(pred_val[0:bsize] == batch_label[0:bsize])
         total_correct += correct
