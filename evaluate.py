@@ -126,6 +126,7 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1, preprocessor=None):
         batch_data, batch_label = TEST_DATASET.next_batch(augment=False)
         bsize = batch_data.shape[0]
         print('Batch: %03d, batch size: %d'%(batch_idx, bsize))
+
         # for the last batch in the epoch, the bsize:end are from last batch
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
@@ -153,6 +154,9 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1, preprocessor=None):
             iteration_finish = time.time()
             runtime.add(iteration_finish - iteration_start)
             batch_pred_sum += pred_val
+        if preprocessing:
+            print('Batch Preprocesstime: %f'%preprocesstime.mean)
+        print('Batch runtime: %f'%runtime.mean)
         pred_val = np.argmax(batch_pred_sum, 1)
         correct = np.sum(pred_val[0:bsize] == batch_label[0:bsize])
         total_correct += correct
