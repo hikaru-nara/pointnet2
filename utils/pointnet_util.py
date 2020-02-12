@@ -151,7 +151,7 @@ def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_al
         else:
             # print('What is the preprocessor? 2', preprocessor)
             new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz, preprocessor=preprocessor) 
-        tf.add_collection('sg_time',time.time()-index_time)
+        tf.add_to_collection('sg_time',time.time()-index_time)
         # print("I'm logging time")
         # group_time=tf.summary.scalar('sampling and grouping time', (time.time()-index_time))
         # Point Feature Embedding
