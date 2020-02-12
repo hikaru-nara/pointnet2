@@ -13,7 +13,7 @@ class Preprocessor(object):
 		self.config = config
 		self.batch_size = config.batch_size
 		# self.num_gpus = config.num_gpus
-		print('batch_size',self.batch_size)
+		# print('batch_size',self.batch_size)
 		# self.batch_size = config.batch_size//self.num_gpus # batch size per gpu
 		self.npoints = [512,128]
 		self.nsamples = [32,64]
@@ -36,17 +36,17 @@ class Preprocessor(object):
 					 			'idx': tf.zeros((self.batch_size, self.npoints[1], self.nsamples[1]))}}
 
 	def batch_preprocess_grouping_and_sampling(self, batch_point_clouds):
-		print('-------------preprocessing---------------')
+		# print('-------------preprocessing---------------')
 		new_xyz_512 = self.sampling(batch_point_clouds, self.npoints[0])
 		idx_512 = self.grouping(batch_point_clouds, new_xyz_512, self.nsamples[0], self.radius[0])
 		self.results['512']['new_xyz'] = new_xyz_512
 		self.results['512']['idx'] = idx_512
-		print('512',new_xyz_512.shape,idx_512.shape)
+		# print('512',new_xyz_512.shape,idx_512.shape)
 		new_xyz_128 = self.sampling(new_xyz_512, self.npoints[1])
 		idx_128 = self.grouping(new_xyz_512, new_xyz_128, self.nsamples[1], self.radius[1])
 		self.results['128']['new_xyz'] = new_xyz_128
 		self.results['128']['idx'] = idx_128
-		print('128',new_xyz_128.shape,idx_128.shape)
+		# print('128',new_xyz_128.shape,idx_128.shape)
 
 		return None
 

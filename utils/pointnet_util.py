@@ -12,9 +12,9 @@ sys.path.append(os.path.join(ROOT_DIR, 'utils'))
 sys.path.append(os.path.join(ROOT_DIR, 'tf_ops/sampling'))
 sys.path.append(os.path.join(ROOT_DIR, 'tf_ops/grouping'))
 sys.path.append(os.path.join(ROOT_DIR, 'tf_ops/3d_interpolation'))
-# from tf_sampling import farthest_point_sample, gather_point
-# from tf_grouping import query_ball_point, group_point, knn_point
-# from tf_interpolate import three_nn, three_interpolate
+from tf_sampling import farthest_point_sample, gather_point
+from tf_grouping import query_ball_point, group_point, knn_point
+from tf_interpolate import three_nn, three_interpolate
 import tensorflow as tf
 import numpy as np
 import tf_util
@@ -41,9 +41,9 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
         idx = preprocessor.results[str(npoint)]['idx']
         batch_size = int(xyz.shape[0])
-        print('-------------shapes in grouping--------------')
-        print('batch_size=xyz.shape[0]',batch_size)
-        print('idx.shape', idx.shape, idx.dtype)
+        # print('-------------shapes in grouping--------------')
+        # print('batch_size=xyz.shape[0]',batch_size)
+        # print('idx.shape', idx.shape, idx.dtype)
         batch_idx = tf.cast(
                         tf.tile(
                             tf.constant(
@@ -53,9 +53,9 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                             ),
                         idx.dtype
                         )
-        print('batch_idx.shape',batch_idx.shape)
+        # print('batch_idx.shape',batch_idx.shape)
         gathernd_idx = tf.cast(tf.stack([batch_idx,idx],axis=-1),tf.int32)
-        print('gathernd_idx.shape',gathernd_idx.shape,gathernd_idx.dtype,tf.stack([batch_idx,idx],axis=-1))
+        # print('gathernd_idx.shape',gathernd_idx.shape,gathernd_idx.dtype,tf.stack([batch_idx,idx],axis=-1))
 
         grouped_xyz = tf.gather_nd(xyz, gathernd_idx)
         if points is not None:
@@ -67,29 +67,27 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         else:
             new_points = grouped_xyz
         return new_xyz, new_points, idx, grouped_xyz
-        # print("ERROR: version with preprocessing is under development")
-        # raise NotImplementedError   
-    # else:
-    #     new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
-    #     if knn:
-    #         _,idx = knn_point(nsample, xyz, new_xyz)
-    #     else:
-    #         idx, pts_cnt = query_ball_point(radius, nsample, xyz, new_xyz)
-    #     grouped_xyz = group_point(xyz, idx) # (batch_size, npoint, nsample, 3)
-    #     grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
-    #     if points is not None:
-    #         grouped_points = group_point(points, idx) # (batch_size, npoint, nsample, channel)
-    #         if use_xyz:
-    #             new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)
-    #         else:
-    #             new_points = grouped_points
-    #     else:
-    #         new_points = grouped_xyz
+    else:
+        new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
+        if knn:
+            _,idx = knn_point(nsample, xyz, new_xyz)
+        else:
+            idx, pts_cnt = query_ball_point(radius, nsample, xyz, new_xyz)
+        grouped_xyz = group_point(xyz, idx) # (batch_size, npoint, nsample, 3)
+        grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
+        if points is not None:
+            grouped_points = group_point(points, idx) # (batch_size, npoint, nsample, channel)
+            if use_xyz:
+                new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)
+            else:
+                new_points = grouped_points
+        else:
+            new_points = grouped_xyz
 
-    #     return new_xyz, new_points, idx, grouped_xyz
+        return new_xyz, new_points, idx, grouped_xyz
 
-    print("ERROR: version without preprocessing is not implemented!")
-    raise NotImplementedError
+    # print("ERROR: version without preprocessing is not implemented!")
+    # raise NotImplementedError
 
 
 def sample_and_group_all(xyz, points, use_xyz=True):

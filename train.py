@@ -132,7 +132,7 @@ def train():
 
             # Get model and loss 
             pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
-            print('get model finish')
+            # print('get model finish')
             MODEL.get_loss(pred, labels_pl, end_points)
             losses = tf.get_collection('losses')
             total_loss = tf.add_n(losses, name='total_loss')
@@ -152,11 +152,12 @@ def train():
                 optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=MOMENTUM)
             elif OPTIMIZER == 'adam':
                 optimizer = tf.train.AdamOptimizer(learning_rate)
+            print("155")
             train_op = optimizer.minimize(total_loss, global_step=batch)
             
             # Add ops to save and restore all the variables.
             saver = tf.train.Saver()
-        
+        print("159")
         # Create a session
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
@@ -171,6 +172,7 @@ def train():
 
         # Init variables
         init = tf.global_variables_initializer()
+        print("175")
         sess.run(init)
 
         ops = {'pointclouds_pl': pointclouds_pl,
@@ -187,9 +189,9 @@ def train():
         for epoch in range(MAX_EPOCH):
             log_string('**** EPOCH %03d ****' % (epoch))
             sys.stdout.flush()
-            print('train one epoch begins')
+            # print('train one epoch begins')
             train_one_epoch(sess, ops, train_writer, preprocessor=preprocessor)
-            print('train one epoch ends')
+            # print('train one epoch ends')
             eval_one_epoch(sess, ops, test_writer, preprocessor=preprocessor)
 
             # Save the variables to disk.
@@ -203,7 +205,7 @@ def train():
 def train_one_epoch(sess, ops, train_writer, preprocessor=None):
     """ ops: dict mapping from string to tf ops """
     is_training = True
-    
+    # print("Train starts")
     log_string(str(datetime.now()))
     runtime = AverageMeter()
     preprocesstime = AverageMeter()
