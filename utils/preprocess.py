@@ -36,7 +36,7 @@ class Preprocessor(object):
 					 			'idx': tf.zeros((self.batch_size, self.npoints[1], self.nsamples[1]))}}
 
 	def batch_preprocess_grouping_and_sampling(self, batch_point_clouds):
-		# print('-------------preprocessing---------------')
+		print('-------------preprocessing---------------')
 		new_xyz_512 = self.sampling(batch_point_clouds, self.npoints[0])
 		idx_512 = self.grouping(batch_point_clouds, new_xyz_512, self.nsamples[0], self.radius[0])
 		self.results['512']['new_xyz'] = new_xyz_512

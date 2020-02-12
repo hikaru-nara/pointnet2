@@ -43,7 +43,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
         idx = preprocessor.results[str(npoint)]['idx']
         batch_size = int(xyz.shape[0])
-        # print('-------------shapes in grouping--------------')
+        print('-------------collecting samples and neightbors--------------')
         # print('batch_size=xyz.shape[0]',batch_size)
         # print('idx.shape', idx.shape, idx.dtype)
         batch_idx = tf.cast(
