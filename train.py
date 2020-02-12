@@ -206,7 +206,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
     
     log_string(str(datetime.now()))
     runtime = AverageMeter()
-
+    preprocesstime = AverageMeter()
     # Make sure batch data is of same size
     cur_batch_data = np.zeros((BATCH_SIZE,NUM_POINT,TRAIN_DATASET.num_channel()))
     cur_batch_label = np.zeros((BATCH_SIZE), dtype=np.int32)
@@ -223,27 +223,33 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
         cur_batch_label[0:bsize] = batch_label
         
         if preprocessor is not None:
+            preprocess_start = time.time()
             preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
+            preprocesstime.add(time.time()-preprocess_start)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
         iteration_start = time.time()
         summary, step, _, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
             ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
+        iteration_finish = time.time()
+        runtime.add(iteration_finish - iteration_start)
         train_writer.add_summary(summary, step)
         pred_val = np.argmax(pred_val, 1)
         correct = np.sum(pred_val[0:bsize] == batch_label[0:bsize])
         total_correct += correct
         total_seen += bsize
         loss_sum += loss_val
-        iteration_finish = time.time()
-        runtime.add(iteration_finish - iteration_start)
+        
 
         if (batch_idx+1)%1 == 0:
             log_string(' ---- batch: %03d ----' % (batch_idx+1))
             log_string('mean loss: %f' % (loss_sum / 50))
             log_string('accuracy: %f' % (total_correct / float(total_seen)))
+            if preprocessing:
+                log_string('Preprocess time: %f' % preprocesstime.mean) 
             log_string('Runtime: %f' % runtime.mean)
+
             total_correct = 0
             total_seen = 0
             loss_sum = 0
@@ -259,7 +265,8 @@ def eval_one_epoch(sess, ops, test_writer, preprocessor=None):
     # Make sure batch data is of same size
     cur_batch_data = np.zeros((BATCH_SIZE,NUM_POINT,TEST_DATASET.num_channel()))
     cur_batch_label = np.zeros((BATCH_SIZE), dtype=np.int32)
-
+    runtime = AverageMeter()
+    preprocesstime = AverageMeter()
     total_correct = 0
     total_seen = 0
     loss_sum = 0
@@ -278,12 +285,17 @@ def eval_one_epoch(sess, ops, test_writer, preprocessor=None):
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
         if preprocessor is not None:
+            preprocess_start = time.time()
             preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
+            preprocesstime.add(time.time()-preprocess_start)
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training}
+        iteration_start = time.time()
         summary, step, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
             ops['loss'], ops['pred']], feed_dict=feed_dict)
+        iteration_finish = time.time()
+        runtime.add(iteration_finish - iteration_start)
         test_writer.add_summary(summary, step)
         pred_val = np.argmax(pred_val, 1)
         correct = np.sum(pred_val[0:bsize] == batch_label[0:bsize])
@@ -299,6 +311,9 @@ def eval_one_epoch(sess, ops, test_writer, preprocessor=None):
     log_string('eval mean loss: %f' % (loss_sum / float(batch_idx)))
     log_string('eval accuracy: %f'% (total_correct / float(total_seen)))
     log_string('eval avg class acc: %f' % (np.mean(np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float))))
+    if preprocessing:
+        log_string('Preprocess time: %f' % (preprocesstime.mean))
+    log_string('Runtime: %f' % runtime.mean)
     EPOCH_CNT += 1
 
     TEST_DATASET.reset()

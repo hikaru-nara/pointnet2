@@ -112,7 +112,8 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1, preprocessor=None):
     # Make sure batch data is of same size
     cur_batch_data = np.zeros((BATCH_SIZE,NUM_POINT,TEST_DATASET.num_channel()))
     cur_batch_label = np.zeros((BATCH_SIZE), dtype=np.int32)
-
+    runtime = AverageMeter()
+    preprocesstime = AverageMeter()
     total_correct = 0
     total_seen = 0
     loss_sum = 0
@@ -141,11 +142,16 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1, preprocessor=None):
                 rotated_data = provider.rotate_point_cloud_by_angle(cur_batch_data[:, shuffled_indices, :],
                     vote_idx/float(num_votes) * np.pi * 2)
             if preprocessor is not None:
+                preprocess_start = time.time()
                 preprocessor.batch_preprocess_grouping_and_sampling(rotated_batch_data)
+                preprocesstime.add(time.time()-preprocess_start)
             feed_dict = {ops['pointclouds_pl']: rotated_data,
                          ops['labels_pl']: cur_batch_label,
                          ops['is_training_pl']: is_training}
+            iteration_start = time.time()
             loss_val, pred_val = sess.run([ops['loss'], ops['pred']], feed_dict=feed_dict)
+            iteration_finish = time.time()
+            runtime.add(iteration_finish - iteration_start)
             batch_pred_sum += pred_val
         pred_val = np.argmax(batch_pred_sum, 1)
         correct = np.sum(pred_val[0:bsize] == batch_label[0:bsize])
@@ -161,11 +167,28 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1, preprocessor=None):
     log_string('eval mean loss: %f' % (loss_sum / float(batch_idx)))
     log_string('eval accuracy: %f'% (total_correct / float(total_seen)))
     log_string('eval avg class acc: %f' % (np.mean(np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float))))
-
+    if preprocessing:
+        log_string('Preprocess time: %f' %preprocesstime.mean)
+    log_string('Runtime: %f' % runtime.mean)
+    
     class_accuracies = np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float)
     for i, name in enumerate(SHAPE_NAMES):
         log_string('%10s:\t%0.3f' % (name, class_accuracies[i]))
 
+class AverageMeter(object):
+    """docstring for AverageMeter"""
+    def __init__(self):
+        super(AverageMeter, self).__init__()
+        self.value = 0
+        self.number = 0
+        self.sum = 0
+        self.mean = 0
+
+    def add(self, value):
+        self.value=value
+        self.number+=1
+        self.sum+=value
+        self.mean=self.sum/self.number
 
 if __name__=='__main__':
     with tf.Graph().as_default():
