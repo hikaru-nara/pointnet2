@@ -38,6 +38,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
             (subtracted by seed point XYZ) in local regions
     '''
     if preprocessor is not None:
+        index_time = time.time()
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
         idx = preprocessor.results[str(npoint)]['idx']
         batch_size = int(xyz.shape[0])
@@ -66,6 +67,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                 new_points = grouped_points
         else:
             new_points = grouped_xyz
+        print("index time: %f"% time.time()-index_time)
         return new_xyz, new_points, idx, grouped_xyz
     else:
         new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
