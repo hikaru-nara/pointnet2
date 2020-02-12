@@ -39,11 +39,10 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
             (subtracted by seed point XYZ) in local regions
     '''
     if preprocessor is not None:
-        index_time = time.time()
         new_xyz = preprocessor.results[str(npoint)]['new_xyz']
         idx = preprocessor.results[str(npoint)]['idx']
         batch_size = int(xyz.shape[0])
-        print('-------------collecting samples and neightbors--------------')
+        # print('-------------collecting samples and neightbors--------------')
         # print('batch_size=xyz.shape[0]',batch_size)
         # print('idx.shape', idx.shape, idx.dtype)
         batch_idx = tf.cast(
@@ -68,7 +67,6 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                 new_points = grouped_points
         else:
             new_points = grouped_xyz
-        print("index time: %f" % (time.time()-index_time))
         return new_xyz, new_points, idx, grouped_xyz
     else:
         new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
@@ -145,13 +143,14 @@ def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_al
 
     with tf.variable_scope(scope) as sc:
         # Sample and Grouping
+        index_time = time.time()
         if group_all:
             nsample = xyz.get_shape()[1].value
             new_xyz, new_points, idx, grouped_xyz = sample_and_group_all(xyz, points, use_xyz)
         else:
             print('What is the preprocessor? 2', preprocessor)
-            new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz, preprocessor=preprocessor)
-
+            new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz, preprocessor=preprocessor) 
+        tf.summary.scalar('sampling and grouping time', (time.time()-index_time))
         # Point Feature Embedding
         if use_nchw: new_points = tf.transpose(new_points, [0,3,1,2])
         for i, num_out_channel in enumerate(mlp):
