@@ -43,12 +43,12 @@ class Preprocessor(object):
 		new_xyz_512 = self.sampling(batch_point_clouds, self.npoints[0])
 		idx_512 = self.grouping(batch_point_clouds, new_xyz_512, self.nsamples[0], self.radius[0])
 		self.results[self.npoints[0]]['new_xyz'] = new_xyz_512
-		self.results['512']['idx'] = idx_512
-		print('512',new_xyz_512.shape,idx_512.shape)
+		self.results[self.npoints[0]]['idx'] = idx_512
+		# print('512',new_xyz_512.shape,idx_512.shape)
 		new_xyz_128 = self.sampling(new_xyz_512, self.npoints[1])
 		idx_128 = self.grouping(new_xyz_512, new_xyz_128, self.nsamples[1], self.radius[1])
-		self.results['128']['new_xyz'] = new_xyz_128
-		self.results['128']['idx'] = idx_128
+		self.results[self.npoints[1]]['new_xyz'] = new_xyz_128
+		self.results[self.npoints[1]]['idx'] = idx_128
 		# print('128',new_xyz_128.shape,idx_128.shape)
 
 		return None
