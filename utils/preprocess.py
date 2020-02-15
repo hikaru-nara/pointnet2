@@ -84,18 +84,18 @@ class Preprocessor(object):
 				time1 = time.time()
 				cpu_index = faiss.IndexFlatL2(3) # make 3 dim index
 				time2 = time.time()
-				gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
-				    cpu_index
-				)
+				# gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
+				#     cpu_index
+				# )
 				print('batch_idx: ',i)
 				time3 = time.time()
 				reference = tf.cast(xyz[i],tf.float32).eval(session=sess)
 				time4 = time.time()
-				gpu_index.add(reference)
+				cpu_index.add(reference)
 				time5 = time.time()
 				query = tf.cast(new_xyz[i],tf.float32).eval(session=sess)
 				time6 = time.time()
-				I,_ = gpu_index.search(query,K) # returns index and distance, I.shape = (npoint,K)
+				I,_ = cpu_index.search(query,K) # returns index and distance, I.shape = (npoint,K)
 				time7 = time.time()
 				idx_list.append(I)
 				print('time: ',time2-time1,time3-time2,time4-time3,time5-time4,time6-time5,time7-time6)
