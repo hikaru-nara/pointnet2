@@ -73,8 +73,13 @@ class Preprocessor(object):
 			idx_list = []
 			for i in range(batch_size):
 				index = faiss.IndexFlatL2(3) # make 3 dim index
-				index.add(tf.cast(xyz[i],tf.float32).eval(session=tf.Session()))
-				I,D = index.search(new_xyz[i], K) # returns index and distance, I.shape = 
+				config = tf.ConfigProto()
+		        config.gpu_options.allow_growth = True
+		        config.allow_soft_placement = True
+		        config.log_device_placement = False
+		        sess = tf.Session(config=config)
+				index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
+				I,D = index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = 
 				idx_list.append(I)
 			return tf.cast(
 						tf.stack(idx_list,axis=0), 
