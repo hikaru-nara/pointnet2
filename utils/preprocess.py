@@ -76,8 +76,12 @@ class Preprocessor(object):
 			config.allow_soft_placement = True
 			config.log_device_placement = False
 			sess = tf.Session(config=config)
+
 			for i in range(batch_size):
 				index = faiss.IndexFlatL2(3) # make 3 dim index
+				gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
+				    cpu_index
+				)
 				print('batch_idx: ',i)
 				index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
 				I,D = index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = (npoint,K)
