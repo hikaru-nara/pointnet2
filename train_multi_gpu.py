@@ -160,7 +160,8 @@ def get_bn_decay(batch):
     return bn_decay
 
 def train():
-    with tf.Graph().as_default():
+    graph = tf.graph()
+    with graph.as_default():
         if preprocessing:
             preprocessor = Preprocessor(config=FLAGS)
         else:
