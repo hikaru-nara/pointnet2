@@ -63,7 +63,7 @@ class Preprocessor(object):
 			sample_idx = np.random.choice(idx,npoint,replace=False).reshape(npoint,1)
 			# batch_idx = np.repeat([i],npoint).astype(sample_idx.dtype)
 			# gathernd_idx = tf.stack([batch_idx,sample_idx],axis=-1)
-			new_xyz = np.take(xyz[i],sample_idx)
+			new_xyz = np.take(xyz[i],sample_idx,axis=0)
 			new_xyz_list.append(new_xyz)
 		return np.stack(new_xyz_list,axis=0)
 
