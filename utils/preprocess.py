@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import time 
 import faiss # facebook ai similarity search, for KNN and Ball query
 """
 this file defines preprocessing function
