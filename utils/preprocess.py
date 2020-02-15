@@ -105,21 +105,22 @@ class Preprocessor(object):
 				# time7 = time.time()
 				idx_list.append(I)
 				# print('time: ',time2-time1,time3-time2,time4-time3,time5-time4,time6-time5,time7-time6)
-			return tf.cast(
-						tf.stack(idx_list,axis=0), 
-						tf.int32
-					)
+			return np.stack(idx_list,axis=0).astype(np.int32)
 
 		else:
-			return tf.cast(
-					tf.tile(
-						tf.constant(
-							np.arange(nsample).reshape((1,1,nsample))
-							),
+			return np.tile(
+						np.arange(nsample).reshape((1,1,nsample)),
 						[batch_size,npoint,1]
-						),
-					tf.int32
-					)
+					).astype(np.int32)
+			# tf.cast(
+			# 		tf.tile(
+			# 			tf.constant(
+			# 				np.arange(nsample).reshape((1,1,nsample))
+			# 				),
+			# 			[batch_size,npoint,1]
+			# 			),
+			# 		tf.int32
+			# 		)
 
 
 
