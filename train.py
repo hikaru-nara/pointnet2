@@ -144,7 +144,9 @@ def train():
             tf.summary.scalar('total_loss', total_loss)
             for l in losses + [total_loss]:
                 tf.summary.scalar(l.op.name, l)
-
+            time_collections = ['sa1_time','sa2_time','sa3_time','fc_time','loss_time']
+            for col in time_collections:
+                tf.summary.scalar(col,tf.get_collection(col))
             correct = tf.equal(tf.argmax(pred, 1), tf.to_int64(labels_pl))
             accuracy = tf.reduce_sum(tf.cast(correct, tf.float32)) / float(BATCH_SIZE)
             tf.summary.scalar('accuracy', accuracy)
@@ -245,6 +247,8 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
         runtime.add(iteration_finish - iteration_start)
         sample_and_group_time = tf.get_collection('sg_time')
         sg_time.add(sum(list(sample_and_group_time)))
+        time_collections = ['sa1_time','sa2_time','sa3_time','fc_time','loss_time']
+        # for ################################################
         train_writer.add_summary(summary, step)
         # train_writer.add_summary(group_time_summary, step)
         pred_val = np.argmax(pred_val, 1)

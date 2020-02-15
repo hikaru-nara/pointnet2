@@ -40,6 +40,7 @@ parser.add_argument('--decay_step', type=int, default=200000, help='Decay step f
 parser.add_argument('--decay_rate', type=float, default=0.7, help='Decay rate for lr decay [default: 0.7]')
 parser.add_argument('--normal', action='store_true', help='Whether to use normal information')
 parser.add_argument('--preprocessing',  action='store_true', help='Whether to use preprocessing to speed up grouping and sampling')
+parser.add_argument('--dataset', default='modelnet40',help='Dataset == modelnet10 or modelnet40')
 FLAGS = parser.parse_args()
 
 EPOCH_CNT = 0
@@ -57,6 +58,7 @@ MOMENTUM = FLAGS.momentum
 OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
+MODELNET10 = (FLAGS.dataset =='modelnet10')
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(ROOT_DIR, 'models', FLAGS.model+'.py')
@@ -77,15 +79,20 @@ HOSTNAME = socket.gethostname()
 NUM_CLASSES = 40
 
 # Shapenet official train/test split
+# if FLAGS.dataset=='modelnet40':
 if FLAGS.normal:
     assert(NUM_POINT<=10000)
     DATA_PATH = os.path.join(ROOT_DIR, 'data/modelnet40_normal_resampled')
-    TRAIN_DATASET = modelnet_dataset.ModelNetDataset(root=DATA_PATH, npoints=NUM_POINT, split='train', normal_channel=FLAGS.normal, batch_size=BATCH_SIZE)
-    TEST_DATASET = modelnet_dataset.ModelNetDataset(root=DATA_PATH, npoints=NUM_POINT, split='test', normal_channel=FLAGS.normal, batch_size=BATCH_SIZE)
+    TRAIN_DATASET = modelnet_dataset.ModelNetDataset(root=DATA_PATH, npoints=NUM_POINT, split='train', normal_channel=FLAGS.normal, batch_size=BATCH_SIZE, modelnet10=MODELNET10)
+    TEST_DATASET = modelnet_dataset.ModelNetDataset(root=DATA_PATH, npoints=NUM_POINT, split='test', normal_channel=FLAGS.normal, batch_size=BATCH_SIZE, modelnet10=MODELNET10)
 else:
     assert(NUM_POINT<=2048)
     TRAIN_DATASET = modelnet_h5_dataset.ModelNetH5Dataset(os.path.join(BASE_DIR, 'data/modelnet40_ply_hdf5_2048/train_files.txt'), batch_size=BATCH_SIZE, npoints=NUM_POINT, shuffle=True)
     TEST_DATASET = modelnet_h5_dataset.ModelNetH5Dataset(os.path.join(BASE_DIR, 'data/modelnet40_ply_hdf5_2048/test_files.txt'), batch_size=BATCH_SIZE, npoints=NUM_POINT, shuffle=False)
+# elif FLAGS.dataset=='modelnet10':
+#     DATA_PATH = os.path.join(ROOT_DIR,'')
+# else:
+#     print('Not such dataset')
 
 def log_string(out_str):
     LOG_FOUT.write(out_str+'\n')
