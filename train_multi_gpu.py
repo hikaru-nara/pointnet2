@@ -269,7 +269,8 @@ def train():
                'merged': merged,
                'step': batch,
                'end_points': end_points}
-        graph.finalize()
+        graph.finalize() # make the graph read-only to prevent memory leak
+        # reference https://stackoverflow.com/questions/39070708/why-sometimes-tensorflow-runs-slower-and-slower-with-the-process-of-training
         best_acc = -1
         for epoch in range(MAX_EPOCH):
             log_string('**** EPOCH %03d ****' % (epoch))

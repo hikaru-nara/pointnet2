@@ -32,6 +32,8 @@ parser.add_argument('--normal', action='store_true', help='Whether to use normal
 parser.add_argument('--dataset', default='modelnet40',help='Dataset == modelnet10 or modelnet40')
 parser.add_argument('--num_votes', type=int, default=1, help='Aggregate classification scores from multiple rotations [default: 1]')
 parser.add_argument('--preprocessing',  action='store_true', help='Whether to use preprocessing to speed up grouping and sampling')
+parser.add_argument('--dataset', default='modelnet40',help='Dataset == modelnet10 or modelnet40')
+parser.add_argument('--knn', action='store_true', help='Whether to use knn for preprocessing')
 
 FLAGS = parser.parse_args()
 
@@ -98,7 +100,7 @@ def evaluate(num_votes):
 
     # Restore variables from disk.
     saver.restore(sess, MODEL_PATH)
-    log_string("Model restored from.", MODEL_PATH)
+    log_string("Model restored from."+MODEL_PATH)
 
     ops = {'pointclouds_pl': pointclouds_pl,
            'labels_pl': labels_pl,
