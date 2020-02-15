@@ -251,6 +251,7 @@ def train():
 
         # Add summary writers
         merged = tf.summary.merge_all()
+
         train_writer = tf.summary.FileWriter(os.path.join(LOG_DIR, 'train'), sess.graph)
         test_writer = tf.summary.FileWriter(os.path.join(LOG_DIR, 'test'), sess.graph)
 
@@ -267,7 +268,7 @@ def train():
                'merged': merged,
                'step': batch,
                'end_points': end_points}
-
+        graph.finalize()
         best_acc = -1
         for epoch in range(MAX_EPOCH):
             log_string('**** EPOCH %03d ****' % (epoch))
