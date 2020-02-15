@@ -29,6 +29,7 @@ parser.add_argument('--num_point', type=int, default=1024, help='Point Number [2
 parser.add_argument('--model_path', default='log/model.ckpt', help='model checkpoint file path [default: log/model.ckpt]')
 parser.add_argument('--dump_dir', default='dump', help='dump folder path [dump]')
 parser.add_argument('--normal', action='store_true', help='Whether to use normal information')
+parser.add_argument('--dataset', default='modelnet40',help='Dataset == modelnet10 or modelnet40')
 parser.add_argument('--num_votes', type=int, default=1, help='Aggregate classification scores from multiple rotations [default: 1]')
 parser.add_argument('--preprocessing',  action='store_true', help='Whether to use preprocessing to speed up grouping and sampling')
 
@@ -44,6 +45,7 @@ DUMP_DIR = FLAGS.dump_dir
 if not os.path.exists(DUMP_DIR): os.mkdir(DUMP_DIR)
 LOG_FOUT = open(os.path.join(DUMP_DIR, 'log_evaluate.txt'), 'w')
 LOG_FOUT.write(str(FLAGS)+'\n')
+MODELNET10 = (FLAGS.dataset =='modelnet10')
 
 NUM_CLASSES = 40
 SHAPE_NAMES = [line.rstrip() for line in \
@@ -55,8 +57,8 @@ HOSTNAME = socket.gethostname()
 if FLAGS.normal:
     assert(NUM_POINT<=10000)
     DATA_PATH = os.path.join(ROOT_DIR, 'data/modelnet40_normal_resampled')
-    TRAIN_DATASET = modelnet_dataset.ModelNetDataset(root=DATA_PATH, npoints=NUM_POINT, split='train', normal_channel=FLAGS.normal, batch_size=BATCH_SIZE)
-    TEST_DATASET = modelnet_dataset.ModelNetDataset(root=DATA_PATH, npoints=NUM_POINT, split='test', normal_channel=FLAGS.normal, batch_size=BATCH_SIZE)
+    TRAIN_DATASET = modelnet_dataset.ModelNetDataset(root=DATA_PATH, npoints=NUM_POINT, split='train', normal_channel=FLAGS.normal, batch_size=BATCH_SIZE, modelnet10=MODELNET10)
+    TEST_DATASET = modelnet_dataset.ModelNetDataset(root=DATA_PATH, npoints=NUM_POINT, split='test', normal_channel=FLAGS.normal, batch_size=BATCH_SIZE, modelnet10=MODELNET10)
 else:
     assert(NUM_POINT<=2048)
     TRAIN_DATASET = modelnet_h5_dataset.ModelNetH5Dataset(os.path.join(BASE_DIR, 'data/modelnet40_ply_hdf5_2048/train_files.txt'), batch_size=BATCH_SIZE, npoints=NUM_POINT, shuffle=True)
