@@ -59,7 +59,7 @@ class Preprocessor(object):
 		new_xyz_list = []
 		for i in range(batch_size):
 			idx = np.arange(ndataset)
-			sample_idx = np.random.choice(idx,npoint,replace=False)
+			sample_idx = np.random.choice(idx,npoint,replace=False).reshape(npoint,1)
 			# batch_idx = np.repeat([i],npoint).astype(sample_idx.dtype)
 			# gathernd_idx = tf.stack([batch_idx,sample_idx],axis=-1)
 			new_xyz = tf.gather_nd(xyz[i],sample_idx)
