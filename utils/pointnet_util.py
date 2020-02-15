@@ -40,8 +40,8 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
             (subtracted by seed point XYZ) in local regions
     '''
     if preprocessor is not None:
-        new_xyz = preprocessor.results[str(npoint)]['new_xyz']
-        idx = preprocessor.results[str(npoint)]['idx']
+        new_xyz = preprocessor.results[npoint]['new_xyz']
+        idx = preprocessor.results[npoint]['idx']
         batch_size = int(xyz.shape[0])
         # print('-------------collecting samples and neightbors--------------')
         # print('batch_size=xyz.shape[0]',batch_size)
