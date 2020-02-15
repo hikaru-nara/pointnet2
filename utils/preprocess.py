@@ -63,22 +63,24 @@ class Preprocessor(object):
 			sample_idx = np.random.choice(idx,npoint,replace=False).reshape(npoint,1)
 			# batch_idx = np.repeat([i],npoint).astype(sample_idx.dtype)
 			# gathernd_idx = tf.stack([batch_idx,sample_idx],axis=-1)
-			new_xyz = tf.gather_nd(xyz[i],sample_idx)
+			new_xyz = np.take(xyz[i],sample_idx)
 			new_xyz_list.append(new_xyz)
-		return tf.stack(new_xyz_list,axis=0)
+		return np.stack(new_xyz_list,axis=0)
 
 	def grouping(self, xyz, new_xyz, nsample, radius, K=32):
 		batch_size = int(xyz.shape[0])
 		npoint = int(new_xyz.shape[1])
+		print(type(xyz))
+		print(type(new_xyz))
 		if self.knn:
 			idx_list = []
-			config = tf.ConfigProto()
-			config.gpu_options.allow_growth = True
-			config.allow_soft_placement = True
-			config.log_device_placement = False
-			sess = tf.Session(config=config)
-			ngpus = faiss.get_num_gpus()
-			print("number of GPUs:", ngpus)
+			# config = tf.ConfigProto()
+			# config.gpu_options.allow_growth = True
+			# config.allow_soft_placement = True
+			# config.log_device_placement = False
+			# sess = tf.Session(config=config)
+			# ngpus = faiss.get_num_gpus()
+			# print("number of GPUs:", ngpus)
 			
 			for i in range(batch_size):
 				time1 = time.time()
@@ -89,11 +91,11 @@ class Preprocessor(object):
 				# )
 				print('batch_idx: ',i)
 				time3 = time.time()
-				reference = tf.cast(xyz[i],tf.float32).eval(session=sess)
+				reference = xyz[i]#tf.cast(xyz[i],tf.float32).eval(session=sess)
 				time4 = time.time()
 				cpu_index.add(reference)
 				time5 = time.time()
-				query = tf.cast(new_xyz[i],tf.float32).eval(session=sess)
+				query = new_xyz[i]#tf.cast(new_xyz[i],tf.float32).eval(session=sess)
 				time6 = time.time()
 				I,_ = cpu_index.search(query,K) # returns index and distance, I.shape = (npoint,K)
 				time7 = time.time()
