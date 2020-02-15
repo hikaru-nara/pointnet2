@@ -72,10 +72,10 @@ class Preprocessor(object):
 		new_xyz = new_xyz.astype(np.float32)
 		batch_size = int(xyz.shape[0])
 		npoint = int(new_xyz.shape[1])
-		print(type(xyz))
-		print(type(new_xyz))
-		print(xyz.shape)
-		print(new_xyz.shape)
+		# print(type(xyz))
+		# print(type(new_xyz))
+		# print(xyz.shape)
+		# print(new_xyz.shape)
 		if self.knn:
 			idx_list = []
 			# config = tf.ConfigProto()
@@ -87,24 +87,24 @@ class Preprocessor(object):
 			# print("number of GPUs:", ngpus)
 			
 			for i in range(batch_size):
-				time1 = time.time()
+				# time1 = time.time()
 				cpu_index = faiss.IndexFlatL2(3) # make 3 dim index
-				time2 = time.time()
+				# time2 = time.time()
 				# gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
 				#     cpu_index
 				# )
-				print('batch_idx: ',i)
-				time3 = time.time()
+				# print('batch_idx: ',i)
+				# time3 = time.time()
 				reference = xyz[i]#tf.cast(xyz[i],tf.float32).eval(session=sess)
-				time4 = time.time()
+				# time4 = time.time()
 				cpu_index.add(reference)
-				time5 = time.time()
+				# time5 = time.time()
 				query = new_xyz[i]#tf.cast(new_xyz[i],tf.float32).eval(session=sess)
-				time6 = time.time()
+				# time6 = time.time()
 				I,_ = cpu_index.search(query,K) # returns index and distance, I.shape = (npoint,K)
-				time7 = time.time()
+				# time7 = time.time()
 				idx_list.append(I)
-				print('time: ',time2-time1,time3-time2,time4-time3,time5-time4,time6-time5,time7-time6)
+				# print('time: ',time2-time1,time3-time2,time4-time3,time5-time4,time6-time5,time7-time6)
 			return tf.cast(
 						tf.stack(idx_list,axis=0), 
 						tf.int32
