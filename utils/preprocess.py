@@ -68,6 +68,8 @@ class Preprocessor(object):
 		return np.stack(new_xyz_list,axis=0)
 
 	def grouping(self, xyz, new_xyz, nsample, radius, K=32):
+		xyz = xyz.astype(float32)
+		new_xyz = new_xyz.astype(float32)
 		batch_size = int(xyz.shape[0])
 		npoint = int(new_xyz.shape[1])
 		print(type(xyz))
