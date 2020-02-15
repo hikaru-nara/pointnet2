@@ -81,12 +81,12 @@ class Preprocessor(object):
 			for i in range(batch_size):
 				
 				cpu_index = faiss.IndexFlatL2(3) # make 3 dim index
-				gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
-				    cpu_index
-				)
+				# gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
+				    # cpu_index
+				# )
 				print('batch_idx: ',i)
-				gpu_index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
-				I,_ = gpu_index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = (npoint,K)
+				cpu_index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
+				I,_ = cpu_index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = (npoint,K)
 				idx_list.append(I)
 			return tf.cast(
 						tf.stack(idx_list,axis=0), 
