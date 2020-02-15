@@ -76,8 +76,10 @@ class Preprocessor(object):
 			config.allow_soft_placement = True
 			config.log_device_placement = False
 			sess = tf.Session(config=config)
-
+			ngpus = faiss.get_num_gpus()
+			print("number of GPUs:", ngpus)
 			for i in range(batch_size):
+				
 				cpu_index = faiss.IndexFlatL2(3) # make 3 dim index
 				gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
 				    cpu_index
