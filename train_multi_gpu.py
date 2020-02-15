@@ -210,7 +210,11 @@ def train():
 
                         pred, end_points = MODEL.get_model(pc_batch,
                             is_training=is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
-
+                        sam_grp_time = tf.get_collection('sg_time')
+                        # print(sam_grp_time)
+                        tf.summary.scalar('sample_and_group_time1', sam_grp_time[0])
+                        tf.summary.scalar('sample_and_group_time2', sam_grp_time[1])
+                        tf.summary.scalar('sample_and_group_time3', sam_grp_time[2])
                         MODEL.get_loss(pred, label_batch, end_points)
                         losses = tf.get_collection('losses', scope)
                         total_loss = tf.add_n(losses, name='total_loss')
@@ -285,6 +289,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
     log_string(str(datetime.now()))
     runtime = AverageMeter()
     preprocesstime = AverageMeter()
+    sg_time = AverageMeter()
     # Make sure batch data is of same size
     cur_batch_data = np.zeros((BATCH_SIZE,NUM_POINT,TRAIN_DATASET.num_channel()))
     cur_batch_label = np.zeros((BATCH_SIZE), dtype=np.int32)
@@ -311,6 +316,8 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
             ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
         iteration_finish = time.time()
         runtime.add(iteration_finish - iteration_start)
+        sample_and_group_time = tf.get_collection('sg_time')
+        sg_time.add(sum(list(sample_and_group_time)))
         train_writer.add_summary(summary, step)
         pred_val = np.argmax(pred_val, 1)
         correct = np.sum(pred_val[0:bsize] == batch_label[0:bsize])
@@ -324,6 +331,7 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
             if preprocessing:
                 log_string('Preprocesstime: %f' % preprocesstime.mean)
             log_string('Runtime: %f' % runtime.mean)
+            log_string('Sample and grouping time: %f' % sg_time.mean)
 
             total_correct = 0
             total_seen = 0
