@@ -71,13 +71,14 @@ class Preprocessor(object):
 		npoint = int(new_xyz.shape[1])
 		if self.knn:
 			idx_list = []
+			config = tf.ConfigProto()
+			config.gpu_options.allow_growth = True
+			config.allow_soft_placement = True
+			config.log_device_placement = False
+			sess = tf.Session(config=config)
 			for i in range(batch_size):
 				index = faiss.IndexFlatL2(3) # make 3 dim index
-				config = tf.ConfigProto()
-				config.gpu_options.allow_growth = True
-				config.allow_soft_placement = True
-				config.log_device_placement = False
-				sess = tf.Session(config=config)
+				
 				index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
 				I,D = index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = 
 				idx_list.append(I)
