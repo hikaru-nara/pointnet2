@@ -74,6 +74,8 @@ class Preprocessor(object):
 		npoint = int(new_xyz.shape[1])
 		print(type(xyz))
 		print(type(new_xyz))
+		print(xyz.shape)
+		print(new_xyz.shape)
 		if self.knn:
 			idx_list = []
 			# config = tf.ConfigProto()
