@@ -83,8 +83,8 @@ class Preprocessor(object):
 				    cpu_index
 				)
 				print('batch_idx: ',i)
-				index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
-				I,D = index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = (npoint,K)
+				gpu_index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
+				I,_ = gpu_index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = (npoint,K)
 				idx_list.append(I)
 			return tf.cast(
 						tf.stack(idx_list,axis=0), 
