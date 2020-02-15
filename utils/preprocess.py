@@ -73,7 +73,7 @@ class Preprocessor(object):
 			idx_list = []
 			for i in range(batch_size):
 				index = faiss.IndexFlatL2(3) # make 3 dim index
-				index.add(xyz[i])
+				index.add(tf.cast(xyz[i],tf.float32))
 				I,D = index.search(new_xyz[i], K) # returns index and distance, I.shape = 
 				idx_list.append(I)
 			return tf.cast(
