@@ -41,6 +41,8 @@ parser.add_argument('--decay_rate', type=float, default=0.7, help='Decay rate fo
 parser.add_argument('--normal', action='store_true', help='Whether to use normal information')
 parser.add_argument('--preprocessing',  action='store_true', help='Whether to use preprocessing to speed up grouping and sampling')
 parser.add_argument('--dataset', default='modelnet40',help='Dataset == modelnet10 or modelnet40')
+parser.add_argument('--knn', action='store_true', help='Whether to use knn for preprocessing')
+# parser.add_argument('--K', ) 
 FLAGS = parser.parse_args()
 
 EPOCH_CNT = 0

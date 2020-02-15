@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import faiss # facebook ai similarity search, for KNN and Ball query
 """
 this file defines preprocessing function
 input: batch point clouds
@@ -18,6 +19,8 @@ class Preprocessor(object):
 		self.npoints = [512,128]
 		self.nsamples = [32,64]
 		self.radius = [0.2,0.4]
+		self.knn = config.knn
+		self.K = [32,64] # KNN k, currently not used, should be adjustable with cmdline param
 		self.results = {self.npoints[0]: {'new_xyz': tf.zeros((self.batch_size, self.npoints[0], 3)),
 								'idx': tf.zeros((self.batch_size, self.npoints[0], self.nsamples[0]))},
 					 	self.npoints[1]: {'new_xyz': tf.zeros((self.batch_size, self.npoints[1], 3)),
@@ -35,7 +38,7 @@ class Preprocessor(object):
 					 	self.npoints[1]: {'new_xyz': tf.zeros((self.batch_size, self.npoints[1], 3)),
 					 			'idx': tf.zeros((self.batch_size, self.npoints[1], self.nsamples[1]))}}
 
-	def batch_preprocess_grouping_and_sampling(self, batch_point_clouds):
+	def batch_preprocess_grouping_and_sampling(self, batch_point_clouds, knn=False):
 		print('-------------preprocessing---------------')
 		new_xyz_512 = self.sampling(batch_point_clouds, self.npoints[0])
 		idx_512 = self.grouping(batch_point_clouds, new_xyz_512, self.nsamples[0], self.radius[0])
@@ -63,18 +66,31 @@ class Preprocessor(object):
 			new_xyz_list.append(new_xyz)
 		return tf.stack(new_xyz_list,axis=0)
 
-	def grouping(self, xyz, new_xyz, nsample, radius, knn=False):
+	def grouping(self, xyz, new_xyz, nsample, radius, K=32):
 		batch_size = xyz.shape[0]
 		npoint = int(new_xyz.shape[1])
-		return tf.cast(
-				tf.tile(
-					tf.constant(
-						np.arange(nsample).reshape((1,1,nsample))
+		if self.knn:
+			idx_list = []
+			for i in range(batch_size):
+				index = faiss.IndexFlatL2(3) # make 3 dim index
+				index.add(xyz[i])
+				I,D = index.search(new_xyz, K) # returns index and distance, I.shape = 
+				idx_list.append(I)
+			return tf.cast(
+						tf.stack(idx_list,axis=0), 
+						tf.int32
+					)
+
+		else:
+			return tf.cast(
+					tf.tile(
+						tf.constant(
+							np.arange(nsample).reshape((1,1,nsample))
+							),
+						[batch_size,npoint,1]
 						),
-					[batch_size,npoint,1]
-					),
-				tf.int32
-				)
+					tf.int32
+					)
 
 
 
