@@ -51,7 +51,7 @@ def get_model(point_cloud, is_training, bn_decay=None, preprocessor=None):
     net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training, scope='dp2')
     net = tf_util.fully_connected(net, 40, activation_fn=None, scope='fc3')
     finish = time.time()
-    td.add_to_collection('fc_time',finish - fc_start)
+    tf.add_to_collection('fc_time',finish - fc_start)
     return net, end_points
 
 
