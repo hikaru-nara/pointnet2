@@ -98,7 +98,7 @@ def evaluate(num_votes):
 
     # Restore variables from disk.
     saver.restore(sess, MODEL_PATH)
-    log_string("Model restored.")
+    log_string("Model restored from.", MODEL_PATH)
 
     ops = {'pointclouds_pl': pointclouds_pl,
            'labels_pl': labels_pl,
