@@ -78,7 +78,7 @@ class Preprocessor(object):
 			sess = tf.Session(config=config)
 
 			for i in range(batch_size):
-				index = faiss.IndexFlatL2(3) # make 3 dim index
+				cpu_index = faiss.IndexFlatL2(3) # make 3 dim index
 				gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
 				    cpu_index
 				)
