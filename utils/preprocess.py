@@ -79,15 +79,19 @@ class Preprocessor(object):
 			ngpus = faiss.get_num_gpus()
 			print("number of GPUs:", ngpus)
 			for i in range(batch_size):
-				
+				time1 = time.time()
 				cpu_index = faiss.IndexFlatL2(3) # make 3 dim index
 				# gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
 				    # cpu_index
 				# )
 				print('batch_idx: ',i)
+				time2 = time.time()
 				cpu_index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
+				time3 = time.time()
 				I,_ = cpu_index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = (npoint,K)
+				time4 = time.time()
 				idx_list.append(I)
+				print('time: ',time2-time1,time3-time2,time4-time3)
 			return tf.cast(
 						tf.stack(idx_list,axis=0), 
 						tf.int32
