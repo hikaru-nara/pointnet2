@@ -78,7 +78,7 @@ class Preprocessor(object):
 			sess = tf.Session(config=config)
 			for i in range(batch_size):
 				index = faiss.IndexFlatL2(3) # make 3 dim index
-				
+				print('batch_idx: ',i)
 				index.add(tf.cast(xyz[i],tf.float32).eval(session=sess))
 				I,D = index.search(tf.cast(new_xyz[i],tf.float32).eval(session=sess), K) # returns index and distance, I.shape = (npoint,K)
 				idx_list.append(I)
