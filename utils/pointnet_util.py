@@ -70,7 +70,8 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         else:
             new_points = grouped_xyz
         '''
-
+        tf.add_to_collection('new_xyz_types',type(new_xyz))
+        tf.add_to_collection('xyz_types',type(xyz))
         if knn:
             _,idx = knn_point(nsample, xyz, new_xyz)
         else:

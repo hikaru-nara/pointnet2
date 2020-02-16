@@ -311,14 +311,22 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
             preprocess_start = time.time()
             preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
             preprocesstime.add(time.time()-preprocess_start)
+        print("debug: preprocess finished")
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
         iteration_start = time.time()
+
         summary, step, _, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
             ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
+
         iteration_finish = time.time()
         runtime.add(iteration_finish - iteration_start)
+        # debug
+        xyz_type = tf.get_collection('xyz_type')
+        new_xyz_type = tf.get_collection('new_xyz_type')
+
+        # debug
         sample_and_group_time = tf.get_collection('sg_time')
         sg_time.add(sum(list(sample_and_group_time)))
         train_writer.add_summary(summary, step)
