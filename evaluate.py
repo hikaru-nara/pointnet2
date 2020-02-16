@@ -84,6 +84,10 @@ def evaluate(num_votes):
 
         # simple model
         pred, end_points = MODEL.get_model(pointclouds_pl, is_training_pl, preprocessor=preprocessor)
+        # sam_grp_time = tf.get_collection('sg_time')
+        # tf.summary.scalar('sample_and_group_time1', sam_grp_time[0])
+        # tf.summary.scalar('sample_and_group_time2', sam_grp_time[1])
+        # tf.summary.scalar('sample_and_group_time3', sam_grp_time[2])
         MODEL.get_loss(pred, labels_pl, end_points)
         losses = tf.get_collection('losses')
         total_loss = tf.add_n(losses, name='total_loss')
@@ -172,6 +176,7 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1, preprocessor=None):
             total_seen_class[l] += 1
             total_correct_class[l] += (pred_val[i] == l)
     
+        
     log_string('eval mean loss: %f' % (loss_sum / float(batch_idx)))
     log_string('eval accuracy: %f'% (total_correct / float(total_seen)))
     log_string('eval avg class acc: %f' % (np.mean(np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float))))
