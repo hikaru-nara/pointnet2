@@ -42,7 +42,7 @@ def getDataFiles(list_filename):
     return [line.rstrip() for line in open(list_filename)]
 
 def load_h5(h5_filename):
-    f = h5py.File(h5_filename)
+    f = h5py.File(h5_filename,'r')
     data = f['data'][:]
     label = f['label'][:]
     return (data, label)
@@ -100,6 +100,8 @@ class ModelNetH5Dataset(object):
         if (self.current_data is None) or (not self._has_next_batch_in_file()):
             if self.current_file_idx >= len(self.h5_files):
                 return False
+            print('data filename')
+            print(self._get_data_filename())
             self._load_data_file(self._get_data_filename())
             self.batch_idx = 0
             self.current_file_idx += 1

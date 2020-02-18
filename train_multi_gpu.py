@@ -91,10 +91,21 @@ else:
     assert(NUM_POINT<=2048)
     TRAIN_DATASET = modelnet_h5_dataset.ModelNetH5Dataset(os.path.join(BASE_DIR, 'data/modelnet40_ply_hdf5_2048/train_files.txt'), batch_size=BATCH_SIZE, npoints=NUM_POINT, shuffle=True)
     TEST_DATASET = modelnet_h5_dataset.ModelNetH5Dataset(os.path.join(BASE_DIR, 'data/modelnet40_ply_hdf5_2048/test_files.txt'), batch_size=BATCH_SIZE, npoints=NUM_POINT, shuffle=False)
-# elif FLAGS.dataset=='modelnet10':
-#     DATA_PATH = os.path.join(ROOT_DIR,'')
-# else:
-#     print('Not such dataset')
+
+# log the opts
+opt = FLAGS
+args = dict((name, getattr(opt, name)) for name in dir(opt)
+                if not name.startswith('_'))
+file_name = os.path.join(opt.log_dir, 'opt.txt')
+with open(file_name, 'wt') as opt_file:
+  # opt_file.write('==> torch version: {}\n'.format(torch.__version__))
+  # opt_file.write('==> cudnn version: {}\n'.format(
+    # torch.backends.cudnn.version()))
+  opt_file.write('==> Cmd:\n')
+  opt_file.write(str(sys.argv))
+  opt_file.write('\n==> Opt:\n')
+  for k, v in sorted(args.items()):
+    opt_file.write('  %s: %s\n' % (str(k), str(v)))
 
 def log_string(out_str):
     LOG_FOUT.write(out_str+'\n')
@@ -169,7 +180,13 @@ def train():
         # print('Are we going to preprocess?', preprocessing)
         # print('What is the preprocessor? 1', preprocessor)
         with tf.device('/cpu:0'):
+
             pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
+            print('---------------pointcloud shape---------------')
+            print(pointclouds_pl.shape)
+            #debug
+            # pointclouds_pl, labels_pl = MODEL.placeholder_inputs(2, 16)
+            #debug
             is_training_pl = tf.placeholder(tf.bool, shape=())
             
             # Note the global_step=batch parameter to minimize. 
@@ -213,9 +230,9 @@ def train():
                             is_training=is_training_pl, bn_decay=bn_decay, preprocessor=preprocessor)
                         sam_grp_time = tf.get_collection('sg_time')
                         # print(sam_grp_time)
-                        tf.summary.scalar('sample_and_group_time1', sam_grp_time[0])
-                        tf.summary.scalar('sample_and_group_time2', sam_grp_time[1])
-                        tf.summary.scalar('sample_and_group_time3', sam_grp_time[2])
+                        # tf.summary.scalar('sample_and_group_time1', sam_grp_time[0])
+                        # tf.summary.scalar('sample_and_group_time2', sam_grp_time[1])
+                        # tf.summary.scalar('sample_and_group_time3', sam_grp_time[2])
                         MODEL.get_loss(pred, label_batch, end_points)
                         losses = tf.get_collection('losses', scope)
                         total_loss = tf.add_n(losses, name='total_loss')
@@ -303,15 +320,20 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
     batch_idx = 0
     while TRAIN_DATASET.has_next_batch():
         batch_data, batch_label = TRAIN_DATASET.next_batch(augment=True)
+        
         #batch_data = provider.random_point_dropout(batch_data)
         bsize = batch_data.shape[0]
         cur_batch_data[0:bsize,...] = batch_data
         cur_batch_label[0:bsize] = batch_label
+        # debug
+        # cur_batch_data = np.arange(96).reshape((2,16,3)).astype(np.float)
+        # print('typeof cur_batch_data',type(cur_batch_data))
+        #debug
         if preprocessor is not None:
             preprocess_start = time.time()
             preprocessor.batch_preprocess_grouping_and_sampling(cur_batch_data)
             preprocesstime.add(time.time()-preprocess_start)
-        print("debug: preprocess finished")
+        # print("debug: preprocess finished")
         feed_dict = {ops['pointclouds_pl']: cur_batch_data,
                      ops['labels_pl']: cur_batch_label,
                      ops['is_training_pl']: is_training,}
@@ -319,15 +341,47 @@ def train_one_epoch(sess, ops, train_writer, preprocessor=None):
 
         summary, step, _, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
             ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
-
+        #debug
+        # xyz = tf.get_collection('xyz')
+        # new_xyz = tf.get_collection('new_xyz')
+        # new_points = tf.get_collection('new_points')
+        # idx = tf.get_collection('idx')
+        # grouped_xyz = tf.get_collection('grouped_xyz')
+        # sess2 = tf.Session()
+        # print('xyz')
+        # print(xyz[3])
+        # print(xyz[3].eval(session=sess2))
+        # print('new_xyz')
+        # print(new_xyz[3])
+        # print(new_xyz[3].eval(session=sess2))
+        # print('new_points')
+        # print(new_points[3])
+        # print(new_points[3].eval(session=sess2))
+        # print('idx')
+        # print(idx[3])
+        # print(idx[3].eval(session=sess2))
+        # print('grouped_xyz')
+        # print(grouped_xyz[3])
+        # print(grouped_xyz[3].eval(session=sess2))
+        # tf.add_to_collection('new_xyz',new_xyz)
+        # tf.add_to_collection('new_points',new_points)
+        # tf.add_to_collection('idx',idx)
+        # tf.add_to_collection('grouped_xyz',grouped_xyz)
+        #debug
         iteration_finish = time.time()
         runtime.add(iteration_finish - iteration_start)
+        # print('debug: session finished')
         # debug
-        xyz_type = tf.get_collection('xyz_type')
-        new_xyz_type = tf.get_collection('new_xyz_type')
-
+        # xyz_type = tf.get_collection('xyz_types')
+        # new_xyz_type = tf.get_collection('new_xyz_types')
+        # np_type = tf.get_collection('np_types')
+        # print(xyz_type)
+        # print(new_xyz_type)
+        # print(np_type)
         # debug
         sample_and_group_time = tf.get_collection('sg_time')
+        # print(sample_and_group_time)
+        # print(list(sample_and_group_time))
         sg_time.add(sum(list(sample_and_group_time)))
         train_writer.add_summary(summary, step)
         pred_val = np.argmax(pred_val, 1)

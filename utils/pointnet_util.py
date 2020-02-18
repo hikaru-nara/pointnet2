@@ -41,7 +41,7 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
     '''
     if preprocessor is not None:
         new_xyz = preprocessor.results[npoint]['new_xyz']
-        '''
+        
         idx = preprocessor.results[npoint]['idx']
         batch_size = int(xyz.shape[0])
         # print('-------------collecting samples and neightbors--------------')
@@ -59,8 +59,9 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         # print('batch_idx.shape',batch_idx.shape)
         gathernd_idx = tf.cast(tf.stack([batch_idx,idx],axis=-1),tf.int32)
         # print('gathernd_idx.shape',gathernd_idx.shape,gathernd_idx.dtype,tf.stack([batch_idx,idx],axis=-1))
-
+        # xyz = tf.constant(xyz)
         grouped_xyz = tf.gather_nd(xyz, gathernd_idx)
+        grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
         if points is not None:
             grouped_points = tf.gather_nd(points, gathernd_idx)
             if use_xyz:
@@ -70,23 +71,30 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
         else:
             new_points = grouped_xyz
         '''
-        tf.add_to_collection('new_xyz_types',type(new_xyz))
-        tf.add_to_collection('xyz_types',type(xyz))
+        tf.add_to_collection('new_xyz_types',str(type(preprocessor.results[npoint]['new_xyz'])))
+        tf.add_to_collection('xyz_types',str(type(xyz)))
+        tf.add_to_collection('np_types',str(type(np.array([1,2,3]))))
         if knn:
             _,idx = knn_point(nsample, xyz, new_xyz)
         else:
             idx, pts_cnt = query_ball_point(radius, nsample, xyz, new_xyz)
+        tf.add_to_collection('reach_here',1)
         grouped_xyz = group_point(xyz, idx) # (batch_size, npoint, nsample, 3)
+        tf.add_to_collection('reach_here',2)
         grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
+        tf.add_to_collection('reach_here',3)
         if points is not None:
             grouped_points = group_point(points, idx) # (batch_size, npoint, nsample, channel)
+            tf.add_to_collection('reach_here',4)
             if use_xyz:
+                tf.add_to_collection('reach_here',5)
                 new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)
             else:
                 new_points = grouped_points
         else:
             new_points = grouped_xyz
-
+        tf.add_to_collection('reach_here',6)
+        '''
         return new_xyz, new_points, idx, grouped_xyz
     else:
         new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
@@ -171,6 +179,13 @@ def pointnet_sa_module(xyz, points, npoint, radius, nsample, mlp, mlp2, group_al
             # print('What is the preprocessor? 2', preprocessor)
             new_xyz, new_points, idx, grouped_xyz = sample_and_group(npoint, radius, nsample, xyz, points, knn, use_xyz, preprocessor=preprocessor) 
         tf.add_to_collection('sg_time',time.time()-index_time)
+        #debug
+        # tf.add_to_collection('xyz',xyz)
+        # tf.add_to_collection('new_xyz',new_xyz)
+        # tf.add_to_collection('new_points',new_points)
+        # tf.add_to_collection('idx',idx)
+        # tf.add_to_collection('grouped_xyz',grouped_xyz)
+        #debug
         # print("I'm logging time")
         # group_time=tf.summary.scalar('sampling and grouping time', (time.time()-index_time))
         # Point Feature Embedding

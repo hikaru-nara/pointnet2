@@ -17,11 +17,11 @@ class Preprocessor(object):
 		# self.num_gpus = config.num_gpus
 		# print('batch_size',self.batch_size)
 		# self.batch_size = config.batch_size//self.num_gpus # batch size per gpu
-		self.npoints = [512,128]
+		self.npoints = [256,64]
 		self.nsamples = [32,64]
 		self.radius = [0.2,0.4]
 		self.knn = config.knn
-		self.K = [32,64] # KNN k, currently not used, should be adjustable with cmdline param
+		self.K = [4,4] # KNN k, currently not used, should be adjustable with cmdline param
 		self.results = {self.npoints[0]: {'new_xyz': tf.zeros((self.batch_size, self.npoints[0], 3)),
 								'idx': tf.zeros((self.batch_size, self.npoints[0], self.nsamples[0]))},
 					 	self.npoints[1]: {'new_xyz': tf.zeros((self.batch_size, self.npoints[1], 3)),
@@ -60,6 +60,7 @@ class Preprocessor(object):
 		new_xyz_list = []
 		for i in range(batch_size):
 			idx = np.arange(ndataset)
+			# print('points num',ndataset,npoint)
 			sample_idx = np.random.choice(idx,npoint,replace=False).reshape(npoint)
 			# batch_idx = np.repeat([i],npoint).astype(sample_idx.dtype)
 			# gathernd_idx = tf.stack([batch_idx,sample_idx],axis=-1)
@@ -72,6 +73,7 @@ class Preprocessor(object):
 		new_xyz = new_xyz.astype(np.float32)
 		batch_size = int(xyz.shape[0])
 		npoint = int(new_xyz.shape[1])
+		nchannel = int(xyz.shape[-1])
 		# print(type(xyz))
 		# print(type(new_xyz))
 		# print(xyz.shape)
@@ -88,7 +90,7 @@ class Preprocessor(object):
 			
 			for i in range(batch_size):
 				# time1 = time.time()
-				cpu_index = faiss.IndexFlatL2(3) # make 3 dim index
+				cpu_index = faiss.IndexFlatL2(nchannel) # make 3 dim index
 				# time2 = time.time()
 				# gpu_index = faiss.index_cpu_to_all_gpus(  # build the index
 				#     cpu_index
@@ -96,12 +98,13 @@ class Preprocessor(object):
 				# print('batch_idx: ',i)
 				# time3 = time.time()
 				reference = xyz[i]#tf.cast(xyz[i],tf.float32).eval(session=sess)
+				# print(xyz.shape)
 				# time4 = time.time()
 				cpu_index.add(reference)
 				# time5 = time.time()
 				query = new_xyz[i]#tf.cast(new_xyz[i],tf.float32).eval(session=sess)
 				# time6 = time.time()
-				I,_ = cpu_index.search(query,K) # returns index and distance, I.shape = (npoint,K)
+				_,I = cpu_index.search(query,nsample) # returns index and distance, I.shape = (npoint,nsample)
 				# time7 = time.time()
 				idx_list.append(I)
 				# print('time: ',time2-time1,time3-time2,time4-time3,time5-time4,time6-time5,time7-time6)

@@ -31,16 +31,16 @@ def get_model(point_cloud, is_training, bn_decay=None, preprocessor=None):
     # Note: When using NCHW for layer 2, we see increased GPU memory usage (in TF1.4).
     # So we only use NCHW for layer 1 until this issue can be resolved.
     sa1_start = time.time()
-    l1_xyz, l1_points, l1_indices = pointnet_sa_module(l0_xyz, l0_points, npoint=512, radius=0.2, nsample=32, mlp=[64,64,128],\
-     mlp2=None, group_all=False, is_training=is_training, bn_decay=bn_decay, scope='layer1', use_nchw=False, preprocessor=preprocessor)
+    l1_xyz, l1_points, l1_indices = pointnet_sa_module(l0_xyz, l0_points, npoint=256, radius=0.2, nsample=32, mlp=[64,64,128],\
+     mlp2=None, group_all=False, is_training=is_training, bn_decay=bn_decay, scope='layer1', use_nchw=False, preprocessor=preprocessor,knn=True)
     sa2_start = time.time()
     tf.add_to_collection('sa1_time',sa2_start - sa1_start)
-    l2_xyz, l2_points, l2_indices = pointnet_sa_module(l1_xyz, l1_points, npoint=128, radius=0.4, nsample=64, mlp=[128,128,256],\
-     mlp2=None, group_all=False, is_training=is_training, bn_decay=bn_decay, scope='layer2', preprocessor=preprocessor)
+    l2_xyz, l2_points, l2_indices = pointnet_sa_module(l1_xyz, l1_points, npoint=64, radius=0.4, nsample=64, mlp=[128,128,256],\
+     mlp2=None, group_all=False, is_training=is_training, bn_decay=bn_decay, scope='layer2', preprocessor=preprocessor,knn=True)
     sa3_start = time.time()
     tf.add_to_collection('sa2_time',sa3_start - sa2_start)
     l3_xyz, l3_points, l3_indices = pointnet_sa_module(l2_xyz, l2_points, npoint=None, radius=None, nsample=None, mlp=[256,512,1024],\
-     mlp2=None, group_all=True, is_training=is_training, bn_decay=bn_decay, scope='layer3', preprocessor=preprocessor)
+     mlp2=None, group_all=True, is_training=is_training, bn_decay=bn_decay, scope='layer3', preprocessor=preprocessor,knn=True)
     fc_start = time.time()
     tf.add_to_collection('sa3_time',fc_start - sa3_start)
     # Fully connected layers
