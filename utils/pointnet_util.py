@@ -70,31 +70,6 @@ def sample_and_group(npoint, radius, nsample, xyz, points, knn=False, use_xyz=Tr
                 new_points = grouped_points
         else:
             new_points = grouped_xyz
-        '''
-        tf.add_to_collection('new_xyz_types',str(type(preprocessor.results[npoint]['new_xyz'])))
-        tf.add_to_collection('xyz_types',str(type(xyz)))
-        tf.add_to_collection('np_types',str(type(np.array([1,2,3]))))
-        if knn:
-            _,idx = knn_point(nsample, xyz, new_xyz)
-        else:
-            idx, pts_cnt = query_ball_point(radius, nsample, xyz, new_xyz)
-        tf.add_to_collection('reach_here',1)
-        grouped_xyz = group_point(xyz, idx) # (batch_size, npoint, nsample, 3)
-        tf.add_to_collection('reach_here',2)
-        grouped_xyz -= tf.tile(tf.expand_dims(new_xyz, 2), [1,1,nsample,1]) # translation normalization
-        tf.add_to_collection('reach_here',3)
-        if points is not None:
-            grouped_points = group_point(points, idx) # (batch_size, npoint, nsample, channel)
-            tf.add_to_collection('reach_here',4)
-            if use_xyz:
-                tf.add_to_collection('reach_here',5)
-                new_points = tf.concat([grouped_xyz, grouped_points], axis=-1) # (batch_size, npoint, nample, 3+channel)
-            else:
-                new_points = grouped_points
-        else:
-            new_points = grouped_xyz
-        tf.add_to_collection('reach_here',6)
-        '''
         return new_xyz, new_points, idx, grouped_xyz
     else:
         new_xyz = gather_point(xyz, farthest_point_sample(npoint, xyz)) # (batch_size, npoint, 3)
